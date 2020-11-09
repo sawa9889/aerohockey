@@ -62,10 +62,9 @@ function love.update(dt)
 	end
 
 	players[1]:moveTo(x, y)
-
+	ball.vector = ball.vector*0.998
     for shape, delta in pairs(hc:collisions(ball.shape)) do
-    	print(shape)
-        ball.vector = delta
+        ball.vector = ball.vector + delta
     end
     ball.shape:move(ball.vector.x, ball.vector.y)
 end
