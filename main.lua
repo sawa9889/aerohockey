@@ -1,5 +1,6 @@
 local HC = require "lib.hardoncollider"
 local Vector = require "lib.hump.vector"
+require "utils"
 
 function love.load()
 	hc = HC.new()
@@ -59,10 +60,8 @@ end
 function love.update(dt)
 	local x,y = love.mouse.getPosition()
 	local cx,cy = players[1]:center()
-	if (x > right_border or x < left_border) or (y > lower_border or y < upper_border)then
-		x = cx
-		y = cy
-	end
+	x = math.clamp(right_border, x, left_border)
+	y = math.clamp(lower_border, y, upper_border)
 
 	players[1]:moveTo(x, y)
 	ball.vector = ball.vector*1
