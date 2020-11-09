@@ -14,6 +14,9 @@ function love.load()
 	ball_range = 10
 	ball_start = {x = right_border, y = lower_border/2}
 	ball = {shape = hc:circle(ball_start.x, ball_start.y, ball_range), vector = Vector(0, 0) }
+	ball.shape.type = 'ball'
+	ball_shadow = hc:circle(ball_start.x, ball_start.y, ball_range)
+	ball_shadow.type = 'shadow'
 
 	local border_width = 50
 	arena = {left_wall  = hc:rectangle(left_border - circle_range - border_width, 
@@ -62,10 +65,21 @@ function love.update(dt)
 	end
 
 	players[1]:moveTo(x, y)
-	ball.vector = ball.vector*0.998
-    for shape, delta in pairs(hc:collisions(ball.shape)) do
-        ball.vector = ball.vector + delta
-    end
+	ball.vector = ball.vector*1
+	local isCollided = false
+	local index = 0
+	local max_index = 5
+	local cx, cy = ball.shape:center()
+	while not isCollided and index <= max_index*3 do
+		ball_shadow:moveTo(cx + ball.vector.x * index  / max_index, cy + ball.vector.y * index  / max_index)
+	    for shape, delta in pairs(hc:collisions(ball_shadow)) do
+	    	if shape.type ~= 'ball' then
+		        ball.vector = ball.vector + delta
+		        isCollided = true
+		    end
+	    end
+	    index = index + 1
+	end
     ball.shape:move(ball.vector.x, ball.vector.y)
 end
 
