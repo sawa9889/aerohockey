@@ -19,7 +19,7 @@ function love.load()
 	ball_shadow = hc:circle(ball_start.x, ball_start.y, ball_range)
 	ball_shadow.type = 'shadow'
 
-	local border_width = 50
+	local border_width = 250
 	arena = {left_wall  = hc:rectangle(left_border - circle_range - border_width, 
 									   upper_border - circle_range, 
 									   border_width,
@@ -28,13 +28,13 @@ function love.load()
 									   upper_border - circle_range, 
 									   border_width,
 									   (lower_border - upper_border + circle_range*2)),
-			 upper_wall = hc:rectangle(left_border - circle_range, 
+			 upper_wall = hc:rectangle(left_border - circle_range - border_width, 
 									   upper_border - circle_range - border_width, 
-									   (right_border - left_border  + circle_range)*2,
+									   (right_border - left_border  + circle_range+ border_width)*2,
 									   border_width),
-			 lower_wall = hc:rectangle(left_border - circle_range, 
+			 lower_wall = hc:rectangle(left_border - circle_range - border_width, 
 									   lower_border + circle_range, 
-									   (right_border - left_border  + circle_range)*2,
+									   (right_border - left_border  + circle_range + border_width)*2,
 									   border_width)}
 end
 
