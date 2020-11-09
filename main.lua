@@ -69,8 +69,10 @@ function love.update(dt)
 	local index = 0
 	local max_index = 5
 	local cx, cy = ball.shape:center()
-	while not isCollided and index <= max_index*3 do
+	while not isCollided and index <= max_index do
 		ball_shadow:moveTo(cx + ball.vector.x * index  / max_index, cy + ball.vector.y * index  / max_index)
+		local pcx, pcy = players[1]:center()
+		players[1]:move((x - pcx) * index / max_index , (y - pcy) * index / max_index)
 	    for shape, delta in pairs(hc:collisions(ball_shadow)) do
 	    	if shape.type ~= 'ball' then
 		        ball.vector = ball.vector + delta
