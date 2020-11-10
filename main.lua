@@ -17,6 +17,7 @@ function love.load()
 	ball_start = {x = right_border, y = lower_border/2}
 	ball = {shape = hc:circle(ball_start.x, ball_start.y, ball_range), vector = Vector(0, 0) }
 	ball_max_speed = 10
+	ball_friction = 0.991
 
 	local border_width = 250
 	arena = {left_wall  = hc:rectangle(left_border - circle_range - border_width, 
@@ -79,6 +80,7 @@ function love.update(dt)
 		ball.shape:move(ball.vector.x, ball.vector.y)
 		i = i + 1
 	end
+	ball.vector = ball.vector * ball_friction
 end
 
 function love.keypressed(key)
