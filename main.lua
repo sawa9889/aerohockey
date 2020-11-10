@@ -20,13 +20,13 @@ function love.load()
 
 	local border_width = 250
 	arena = {left_wall  = hc:rectangle(left_border - circle_range - border_width, 
-									   upper_border - circle_range, 
+									   upper_border - circle_range*5, 
 									   border_width,
-									   (lower_border - upper_border + circle_range*2)),
+									   (lower_border - upper_border + circle_range*10)),
 			 right_wall = hc:rectangle(right_border + right_border - left_border  + circle_range, 
-									   upper_border - circle_range, 
+									   upper_border - circle_range*5, 
 									   border_width,
-									   (lower_border - upper_border + circle_range*2)),
+									   (lower_border - upper_border + circle_range*10)),
 			 upper_wall = hc:rectangle(left_border - circle_range - border_width, 
 									   upper_border - circle_range - border_width, 
 									   (right_border - left_border  + circle_range+ border_width)*2,
