@@ -1,3 +1,4 @@
+serpent = require "lib.debug.serpent"
 Debug = {}
 
 -- usage: vardump(x1, test, myVar) or vardump({ship = self, dt = dt})

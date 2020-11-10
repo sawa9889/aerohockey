@@ -1,6 +1,7 @@
 local HC = require "lib.hardoncollider"
 local Vector = require "lib.hump.vector"
 require "utils"
+require "engine.debug"
 
 function love.load()
 	hc = HC.new()
@@ -15,9 +16,7 @@ function love.load()
 	ball_range = 15
 	ball_start = {x = right_border, y = lower_border/2}
 	ball = {shape = hc:circle(ball_start.x, ball_start.y, ball_range), vector = Vector(0, 0) }
-	ball.shape.type = 'ball'
-	ball_shadow = hc:circle(ball_start.x, ball_start.y, ball_range)
-	ball_shadow.type = 'shadow'
+	ball_max_speed = 10
 
 	local border_width = 250
 	arena = {left_wall  = hc:rectangle(left_border - circle_range - border_width, 
@@ -58,32 +57,28 @@ function love.draw()
 end
 
 function love.update(dt)
-	local x,y = love.mouse.getPosition()
-	local cx,cy = players[1]:center()
-	x = math.clamp(right_border, x, left_border)
-	y = math.clamp(lower_border, y, upper_border)
+	local iterations = 10
+	local player_target_x, player_target_y = love.mouse.getPosition()
+	local player_x, player_y = players[1]:center()
+	player_target_x = math.clamp(right_border, player_target_x, left_border)
+	player_target_y = math.clamp(lower_border, player_target_y, upper_border)
+	local player_dx = (player_target_x - player_x) / iterations
+	local player_dy = (player_target_y - player_y) / iterations
 
-	players[1]:moveTo(x, y)
-	ball.vector = ball.vector*1
-	local isCollided = false
-	local index = 1
-	local max_index = 10
-	local cx, cy = ball.shape:center()
-	local pcx, pcy = players[1]:center()
-	local dx = pcx - x
-	local dy = pcy - y
-	while not isCollided and index <= max_index do
-		ball_shadow:moveTo(cx + ball.vector.x * index  / max_index, cy + ball.vector.y * index  / max_index)
-		players[1]:moveTo(pcx + dx * index / max_index , pcy + dy * index / max_index)
-	    for shape, delta in pairs(hc:collisions(ball_shadow)) do
-	    	if shape.type ~= 'ball' then
-		        ball.vector = ball.vector + delta
-		        isCollided = true
-		    end
-	    end
-	    index = index + 1
+	local i = 1
+	while i < iterations do
+		players[1]:move(player_dx, player_dy)
+		ball.vector = ball.vector
+		local cx, cy = ball.shape:center()
+		for shape, delta in pairs(hc:collisions(ball.shape)) do
+			ball.vector = ball.vector + Vector(unpack(delta))/10
+		end
+		if ball.vector:len() > ball_max_speed then
+			ball.vector = ball.vector:normalized() * ball_max_speed
+		end
+		ball.shape:move(ball.vector.x, ball.vector.y)
+		i = i + 1
 	end
-    ball.shape:move(ball.vector.x, ball.vector.y)
 end
 
 function love.keypressed(key)
