@@ -21,8 +21,8 @@ function love.load()
     ball_start = {x = arena_start.x + arena_width/2 , y = arena_start.y + arena_height/2}
     ball = {shape = hc:circle(ball_start.x, ball_start.y, ball_range), vector = Vector(0, 0) }
     ball.shape.type = 'ball'
-	ball_max_speed = 10
-	ball_friction = 0.991
+    ball_max_speed = 10
+    ball_friction = 0.991
 
     local border_width = 250
     local gate_hole = 40
@@ -58,8 +58,8 @@ function love.load()
                                               gate_start + gate_height, 
                                               border_width,
                                               lower_border_end - gate_start + gate_height),
-             right_gate  	   = hc:rectangle(right_border_start + gate_hole, 
-                                       	      gate_start - border_width, 
+             right_gate        = hc:rectangle(right_border_start + gate_hole, 
+                                              gate_start - border_width, 
                                               border_width - gate_hole,
                                               gate_height+ border_width*2),
 
@@ -93,40 +93,40 @@ function love.draw()
 end
 
 function love.update(dt)
-	local iterations = 10
-	local player_target_x, player_target_y = love.mouse.getPosition()
-	local player_x, player_y = players[1]:center()
-	player_target_x = math.clamp(arena_start.x + arena_width/2, player_target_x, arena_start.x)
-	player_target_y = math.clamp(arena_start.y + arena_height, player_target_y, arena_start.y)
-	local player_dx = (player_target_x - player_x) / iterations
-	local player_dy = (player_target_y - player_y) / iterations
+    local iterations = 10
+    local player_target_x, player_target_y = love.mouse.getPosition()
+    local player_x, player_y = players[1]:center()
+    player_target_x = math.clamp(arena_start.x + arena_width/2, player_target_x, arena_start.x)
+    player_target_y = math.clamp(arena_start.y + arena_height, player_target_y, arena_start.y)
+    local player_dx = (player_target_x - player_x) / iterations
+    local player_dy = (player_target_y - player_y) / iterations
 
-	local i = 1
-	while i < iterations do
-		players[1]:move(player_dx, player_dy)
-		ball.vector = ball.vector
-		local cx, cy = ball.shape:center()
-		for shape, delta in pairs(hc:collisions(ball.shape)) do
-			ball.vector = ball.vector + Vector(unpack(delta))/10
-		end
-		if ball.vector:len() > ball_max_speed then
-			ball.vector = ball.vector:normalized() * ball_max_speed
-		end
-		ball.shape:move(ball.vector.x, ball.vector.y)
-		i = i + 1
-	end
-	ball.vector = ball.vector * ball_friction
+    local i = 1
+    while i < iterations do
+        players[1]:move(player_dx, player_dy)
+        ball.vector = ball.vector
+        local cx, cy = ball.shape:center()
+        for shape, delta in pairs(hc:collisions(ball.shape)) do
+            ball.vector = ball.vector + Vector(unpack(delta))/10
+        end
+        if ball.vector:len() > ball_max_speed then
+            ball.vector = ball.vector:normalized() * ball_max_speed
+        end
+        ball.shape:move(ball.vector.x, ball.vector.y)
+        i = i + 1
+    end
+    ball.vector = ball.vector * ball_friction
 
-	for shape, delta in pairs(hc:collisions(arena.left_gate)) do
-		if shape.type == 'ball' then
-			print('Left gate')
-		end
-	end
-	for shape, delta in pairs(hc:collisions(arena.right_gate)) do
-		if shape.type == 'ball' then
-			print('Right gate')
-		end
-	end
+    for shape, delta in pairs(hc:collisions(arena.left_gate)) do
+        if shape.type == 'ball' then
+            print('Left gate')
+        end
+    end
+    for shape, delta in pairs(hc:collisions(arena.right_gate)) do
+        if shape.type == 'ball' then
+            print('Right gate')
+        end
+    end
 end
 
 function love.keypressed(key)
