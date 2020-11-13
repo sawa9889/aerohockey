@@ -1,4 +1,9 @@
-config = {}
+config = {
+    network = {
+        maxRollback = 30,
+        
+    }
+}
 
 function love.conf(t)
     t.window.title = "Aerohockey"
