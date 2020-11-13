@@ -16,6 +16,10 @@ function love.draw()
     StateManager.draw()
 end
 
+function love.keypressed(key, scancode, isrepeat)
+    StateManager.keypressed(key, scancode, isrepeat)
+end
+
 function love.update(dt)
     StateManager.update(dt)
 end

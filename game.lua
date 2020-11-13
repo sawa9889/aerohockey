@@ -21,7 +21,7 @@ function Game:init(inputSource)
     self.players[2] = self.hc:circle(self.player2_start.x, self.player2_start.y, self.circle_range)
 
     self.ball_start = {x = self.arena_start.x + self.arena_width/2 , y = self.arena_start.y + self.arena_height/2}
-    self.ball = {shape = self.hc:circle(self.ball_start.x, self.ball_start.y, self.ball_range), vector = Vector(0, 0) }
+    self.ball = {shape = self.hc:circle(self.ball_start.x, self.ball_start.y, self.ball_range), velocity = Vector(0, 0) }
     self.ball.shape.type = 'ball'
     self.ball_max_speed = 10
     self.ball_friction = 0.991
@@ -84,6 +84,35 @@ function Game:init(inputSource)
     }
 end
 
+function Game:getState()
+    local state = {
+        players = {
+            [1] = Vector(self.players[1]:center()),
+            [2] = Vector(self.players[2]:center())
+        },
+        ball = {
+            position = Vector(self.ball.shape:center()),
+            velocity = self.ball.velocity:clone()
+        }
+    }
+    if Debug and Debug.showStatesLoadSave then
+        print("Serialized state")
+        vardump(state)
+    end
+    return state
+end
+
+function Game:loadState(state)
+    if Debug and Debug.showStatesLoadSave then
+        print("Loaded state")
+        vardump(state)
+    end
+    self.players[1]:moveTo(state.players[1].x, state.players[1].y)
+    self.players[2]:moveTo(state.players[2].x, state.players[2].y)
+    self.ball.velocity = state.ball.velocity
+    self.ball.shape:moveTo(state.ball.position.x, state.ball.position.y)
+end
+
 function Game:draw()
     love.graphics.setColor(0, 0, 1)
     local shapes = self.hc:hash():shapes()
@@ -131,15 +160,15 @@ function Game:advanceFrame()
         self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
         local cx, cy = self.ball.shape:center()
         for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
-            self.ball.vector = self.ball.vector + Vector(unpack(delta))/10
+            self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/10
         end
-        if self.ball.vector:len() > self.ball_max_speed then
-            self.ball.vector = self.ball.vector:normalized() * self.ball_max_speed
+        if self.ball.velocity:len() > self.ball_max_speed then
+            self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
         end
-        self.ball.shape:move(self.ball.vector.x, self.ball.vector.y)
+        self.ball.shape:move(self.ball.velocity.x, self.ball.velocity.y)
         i = i + 1
     end
-    self.ball.vector = self.ball.vector * self.ball_friction
+    self.ball.velocity = self.ball.velocity * self.ball_friction
 
     for shape, delta in pairs(self.hc:collisions(self.arena.left_gate)) do
         if shape.type == 'ball' then
