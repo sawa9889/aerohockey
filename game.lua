@@ -3,8 +3,10 @@ local Vector = require "lib.hump.vector"
 
 local Game = {}
 
-function Game:load()
+function Game:init(inputSource)
     self.hc = HC.new()
+
+    self.inputSource = inputSource
 
     self.ball_range = 15
     self.circle_range = 40
@@ -105,18 +107,28 @@ function Game:draw()
     )
 end
 
+function Game:getPlayerdx(target, playerNum)
+    local playerPos = Vector(self.players[playerNum]:center())
+    if playerNum == 1 then
+        target.x = math.clamp(self.arena_start.x + self.arena_width/2, target.x, self.arena_start.x)
+    else
+        target.x = math.clamp(self.arena_start.x + self.arena_width/2, target.x, self.arena_start.x + self.arena_width)
+    end
+    target.y = math.clamp(self.arena_start.y + self.arena_height, target.y, self.arena_start.y)
+    return target - playerPos
+end
+
 function Game:advanceFrame()
     local iterations = 10
-    local player_target_x, player_target_y = love.mouse.getPosition()
-    local player_x, player_y = self.players[1]:center()
-    player_target_x = math.clamp(self.arena_start.x + self.arena_width/2, player_target_x, self.arena_start.x)
-    player_target_y = math.clamp(self.arena_start.y + self.arena_height, player_target_y, self.arena_start.y)
-    local player_dx = (player_target_x - player_x) / iterations
-    local player_dy = (player_target_y - player_y) / iterations
+    local inputs = self.inputSource()
+    local player_dPos = {}
+    player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
+    player_dPos[2] = self:getPlayerdx(Vector(inputs[2].x, inputs[2].y), 2) / iterations
 
     local i = 1
     while i < iterations do
-        self.players[1]:move(player_dx, player_dy)
+        self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
+        self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
         local cx, cy = self.ball.shape:center()
         for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
             self.ball.vector = self.ball.vector + Vector(unpack(delta))/10
