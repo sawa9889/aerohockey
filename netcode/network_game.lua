@@ -1,6 +1,14 @@
 local maxRollback = config.network.maxRollback
 local RingBuffer = require "netcode.ring_buffer"
 
+local NetworkPackets = require "netcode.network_packets"
+
+local networkInput  = love.thread.getChannel("networkControl")
+local networkOutput = love.thread.getChannel("networkOutput")
+
+local networkManagerThread = love.thread.newThread("netcode/network_manager.lua")
+networkManagerThread:start()
+
 local NetworkGame = {
     states = RingBuffer(maxRollback),
     inputs = {},
@@ -20,17 +28,21 @@ function NetworkGame:update(dt)
     -- get stuff from net
     -- if there are packets from the past - rollback game
     -- and advance n frames
-    
+
     if self.localFrame > self.confirmedFrame then
         self.replay = false
     end
     if not self.replay then
         local localInputs = self:getLocalInputs()
         self:addInputs(self.localFrame, 1, localInputs)
+        networkInput:push( {
+            command = "send", packet = NetworkPackets.Inputs(localInputs, self.localFrame, self.confirmedFrame)
+        } )
         self:addInputs(self.localFrame, 2, { x = 800 - localInputs.x, y = 490 - localInputs.y})
         self.confirmedFrame = self.localFrame
     end
-    -- send inputs to opponent
+    local incomingPackets = networkOutput:pop()
+    vardump(incomingPackets)
     -- get inputs for both players
     -- if there is none for opponent - extrapolate
     self.game:advanceFrame()
