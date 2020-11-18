@@ -22,7 +22,7 @@ local NetworkGame = {
     predictedInputs = {},
     confirmedFrame = delay,
     localFrame = 1,
-    delay = 2
+    delay = 3
 }
 
 function NetworkGame:enter(prevState, game)
@@ -49,7 +49,9 @@ function NetworkGame:update(dt)
             },
             self.localFrame + self.delay, self.confirmedFrame)
     } )
-    print("Sent inputs for " .. self.localFrame + self.delay)
+    if Debug and Debug.netcodeLog > 4 then
+        print("Sent inputs for " .. self.localFrame + self.delay)
+    end
 
     while networkOutput:peek() do
         local channelMessage = networkOutput:pop()
@@ -64,8 +66,11 @@ function NetworkGame:update(dt)
     end
 
     if not self.isPaused then
-        print("Advancing game. Frame: " .. self.localFrame)
+        if Debug and Debug.netcodeLog > 1 then
+            print("Advancing game. Frame: " .. self.localFrame)
+        end
         self.game:advanceFrame()
+        vardump(self.game.ball.velocity:len())
         self.localFrame = self.localFrame + 1
         self.states:push(self.game:getState())
     end
@@ -73,8 +78,12 @@ function NetworkGame:update(dt)
 end
 
 function NetworkGame:addInputs(frame, player, inputs)
-    print("ADD INPUTS")
-    vardump(frame, player, inputs)
+    if Debug and Debug.netcodeLog > 4 then
+        print("ADD INPUTS: f: "..frame.." player:"..player.."")
+        if Debug and Debug.netcodeLog > 5 then
+            vardump(inputs)
+        end
+    end
     if not self.inputs[frame] then
         self.inputs[frame] = {}
     end
@@ -89,6 +98,10 @@ end
 function NetworkGame:getPredictedInputs(frame, player)
     local lastInput = self.inputs[self.confirmedFrame][player]
     if frame > self.confirmedFrame and self.confirmedFrame > 1 then
+        if self.inputs[frame + 1] and self.inputs[frame + 1][player] then
+            local nextInput = self.inputs[frame + 1][player]
+            return (lastInput + nextInput) / 2
+        end
         local prevInput = self.inputs[self.confirmedFrame - 1][player]
         return lastInput -- + ( lastInput - prevInput ) * ( frame - self.confirmedFrame )   -- that looks stupid
     else
@@ -105,10 +118,14 @@ function NetworkGame:getGameInputs()
         -- inputs = self.inputs[self.confirmedFrame]
     end
     if not inputs[self.opponent] then -- @todo: multiple opponents?
-        print("Predicting inputs at frame " .. self.localFrame)
+        if Debug and Debug.netcodeLog > 4 then
+            print("Predicting inputs at frame " .. self.localFrame)
+        end
         inputs[self.opponent] = self:getPredictedInputs(self.localFrame, self.opponent)
         self.predictedInputs[self.localFrame] = { [self.opponent] = inputs[self.opponent] }
-        print("Predicted x="..inputs[self.opponent].x.." y="..inputs[self.opponent].y)
+        if Debug and Debug.netcodeLog > 4 then
+            print("Predicted x="..inputs[self.opponent].x.." y="..inputs[self.opponent].y)
+        end
     end
     return inputs
 end
@@ -125,7 +142,6 @@ end
 
 function NetworkGame:isConfirmed(frame)
     if self.inputs[frame] and self.inputs[frame][self.opponent] and self.inputs[frame][self.player] then
-        vardump(frame, self.inputs[frame], self.inputs[frame][self.opponent], self.inputs[frame][self.player])
         return true
     else
         return false
@@ -133,12 +149,19 @@ function NetworkGame:isConfirmed(frame)
 end
 
 function NetworkGame:handleRollback(newConfirmedFrame)
-    print("Rolling back! Local:" .. self.localFrame .. " Conf:" .. self.confirmedFrame .. " New Conf:" .. newConfirmedFrame)
+    if Debug and Debug.netcodeLog > 3 then
+        print("Rolling back! Local:" .. self.localFrame .. " Conf:" .. self.confirmedFrame .. " New Conf:" .. newConfirmedFrame)
+    end
     while self.confirmedFrame < newConfirmedFrame do
         -- check if we predicted right
         -- then just skip from last confirmedFrame to the last correctly predicted
+        if Debug and Debug.netcodeLog > 5 then
+            vardump(self.predictedInputs)
+        end
         if not self.predictedInputs[self.confirmedFrame + 1] then
-            print("We don't have inputs for frame "..self.confirmedFrame + 1)
+            if Debug and Debug.netcodeLog > 4 then
+                print("We don't have predicted inputs for frame "..self.confirmedFrame + 1)
+            end
             break
         end
         local confirmedInput = self.inputs[self.confirmedFrame + 1][self.opponent]
@@ -152,11 +175,15 @@ function NetworkGame:handleRollback(newConfirmedFrame)
             end
         end
         if isPredictedRight then
-            print("Frame " .. self.confirmedFrame + 1 .. " prediction was correct")
-            print("Set confirmed frame to " .. self.confirmedFrame + 1)
+            if Debug and Debug.netcodeLog > 3 then
+                print("Frame " .. self.confirmedFrame + 1 .. " prediction was correct")
+                print("Set confirmed frame to " .. self.confirmedFrame + 1)
+            end
             self.confirmedFrame = self.confirmedFrame + 1
         else
-            print("Frame " .. self.confirmedFrame + 1 .. " was predicted wrong")
+            if Debug and Debug.netcodeLog > 3 then
+                print("Frame " .. self.confirmedFrame + 1 .. " was predicted wrong")
+            end
             break
         end
     end
@@ -164,39 +191,55 @@ function NetworkGame:handleRollback(newConfirmedFrame)
     -- then we need to rollback to last correctly predicted frame
     local frame = self.confirmedFrame
     local rollback = self.localFrame - frame
-    --vardump(self.states)
-    while rollback > 1 do
-        print("Dropping 1 frame")
+
+    if rollback <= 0 then
+        return
+    end
+    while rollback > 0 do
+        if Debug and Debug.netcodeLog > 4 then
+            print("Dropping 1 frame")
+        end
         self.states:pop()
         rollback = rollback - 1
     end
-    if rollback > 0 then
+    if Debug and Debug.netcodeLog > 1 then
         print("Loading state")
-        --vardump(self.states)
-        self.game:loadState(self.states:pop())
-        -- advance frames untill we are at the present
-        local newLocalFrame = self.localFrame
-        self.localFrame = self.confirmedFrame
-        self.confirmedFrame = newConfirmedFrame
+    end
+    self.game:loadState(self.states:peek())
+    vardump(self.game.ball.velocity:len())
+    -- advance frames untill we are at the present
+    local newLocalFrame = self.localFrame
+    self.localFrame = self.confirmedFrame
+    self.confirmedFrame = newConfirmedFrame
+    if Debug and Debug.netcodeLog > 3 then
         print("Fast forward from "..self.localFrame .. " to " .. newLocalFrame)
-        while self.localFrame < newLocalFrame do
+    end
+    while self.localFrame < newLocalFrame do
+        if Debug and Debug.netcodeLog > 1 then
             print("FF advancing game. Frame: " .. self.localFrame)
-            self.game:advanceFrame()
-            self.localFrame = self.localFrame + 1
-            self.states:push(self.game:getState())
         end
+        self.game:advanceFrame()
+        vardump(self.game.ball.velocity:len())
+        self.localFrame = self.localFrame + 1
+        self.states:push(self.game:getState())
     end
 end
 
 function NetworkGame:handlePacket(packet)
     if packet.type == NetworkPackets.types.inputs then
         local frame = packet.startFrame
-        print("Got inputs for frame "..frame..": ")
-        vardump(packet.inputs)
+        if Debug and Debug.netcodeLog > 4 then
+            print("Got inputs for frame "..frame..": ")
+            if Debug and Debug.netcodeLog > 5 then
+                vardump(packet.inputs)
+            end
+        end
         for _, input in ipairs(packet.inputs) do
             input = Vector(input.x, input.y) -- wtf
             if frame < self.confirmedFrame then
-                print("Received conflicting packet for frame "..frame.." but frame " .. self.confirmedFrame .. " is confirmed")
+                if Debug and Debug.netcodeLog > 2 then
+                    print("Received conflicting packet for frame "..frame.." but frame " .. self.confirmedFrame .. " is confirmed")
+                end
             else
                 self:addInputs(frame, self.opponent, input)
             end
@@ -210,6 +253,10 @@ end
 
 function NetworkGame:draw()
     self.game:draw()
+    if Debug and Debug.showFps == 1 then
+        love.graphics.print(""..tostring(love.timer.getFPS( )), 2, 2)
+    end
+    love.graphics.print(self.localFrame, 2, 16)
 end
 
 return NetworkGame

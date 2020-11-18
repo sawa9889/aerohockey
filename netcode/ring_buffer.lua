@@ -11,15 +11,19 @@ local RingBuffer = Class {
 function RingBuffer:push(item)
     self.elements[self.head] = item
     self.head = self.head + 1
-    if self.head >= self.size then
-        self.head = 0
+    if self.head > self.size then
+        self.head = 1
     end
 end
 
-function RingBuffer:pop(item)
+function RingBuffer:peek()
+    return self.elements[self.head]
+end
+
+function RingBuffer:pop()
     self.head = self.head - 1
     if self.head < 1 then
-        self.head = self.size - 1
+        self.head = self.size
     end
     return self.elements[self.head]
 end
