@@ -1,6 +1,6 @@
 serpent = require "lib.debug.serpent"
 Debug = {
-    showStatesLoadSave = 1,
+    showStatesLoadSave = 0,
 }
 
 -- usage: vardump(x1, test, myVar) or vardump({ship = self, dt = dt})

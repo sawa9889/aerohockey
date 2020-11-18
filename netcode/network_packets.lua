@@ -16,6 +16,7 @@ local packetTypes = {
 }
 
 local packets = {
+    types = packetTypes,
     Inputs = Class {
         __includes = Packet,
         init = function (self, inputs, startFrame, ackFrame)

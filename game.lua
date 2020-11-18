@@ -95,7 +95,7 @@ function Game:getState()
             velocity = self.ball.velocity:clone()
         }
     }
-    if Debug and Debug.showStatesLoadSave then
+    if Debug and Debug.showStatesLoadSave == 1 then
         print("Serialized state")
         vardump(state)
     end
@@ -103,7 +103,7 @@ function Game:getState()
 end
 
 function Game:loadState(state)
-    if Debug and Debug.showStatesLoadSave then
+    if Debug and Debug.showStatesLoadSave == 1 then
         print("Loaded state")
         vardump(state)
     end

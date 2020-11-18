@@ -2,7 +2,6 @@
 -- usage:
 -- local networkManagerThread = love.thread.newThread( require "netcode.network_manager" )
 -- networkManagerThread:start()
-
 require 'love.timer'
 
 local gameState = "menu" -- waiting_for_client, connecting, ready_to_play, playing, disconnected, error
