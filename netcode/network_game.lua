@@ -70,7 +70,9 @@ function NetworkGame:update(dt)
             print("Advancing game. Frame: " .. self.localFrame)
         end
         self.game:advanceFrame()
-        vardump(self.game.ball.velocity:len())
+        if Debug and Debug.ballSpeedLog == 1 then
+            vardump(self.game.ball.velocity:len())
+        end
         self.localFrame = self.localFrame + 1
         self.states:push(self.game:getState())
     end
@@ -206,7 +208,9 @@ function NetworkGame:handleRollback(newConfirmedFrame)
         print("Loading state")
     end
     self.game:loadState(self.states:peek())
-    vardump(self.game.ball.velocity:len())
+    if Debug and Debug.ballSpeedLog == 1 then
+        vardump(self.game.ball.velocity:len())
+    end
     -- advance frames untill we are at the present
     local newLocalFrame = self.localFrame
     self.localFrame = self.confirmedFrame
@@ -219,7 +223,9 @@ function NetworkGame:handleRollback(newConfirmedFrame)
             print("FF advancing game. Frame: " .. self.localFrame)
         end
         self.game:advanceFrame()
-        vardump(self.game.ball.velocity:len())
+        if Debug and Debug.ballSpeedLog == 1 then
+            vardump(self.game.ball.velocity:len())
+        end
         self.localFrame = self.localFrame + 1
         self.states:push(self.game:getState())
     end
