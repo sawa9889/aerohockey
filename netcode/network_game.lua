@@ -19,10 +19,11 @@ local NetworkGame = {
     states = RingBuffer(maxRollback),
     isPaused = false,
     inputs = {},
+    replay = {},
     predictedInputs = {},
     confirmedFrame = delay,
     localFrame = 1,
-    delay = 3
+    delay = 5
 }
 
 function NetworkGame:enter(prevState, game)
@@ -69,12 +70,7 @@ function NetworkGame:update(dt)
         if Debug and Debug.netcodeLog > 1 then
             print("Advancing game. Frame: " .. self.localFrame)
         end
-        self.game:advanceFrame()
-        if Debug and Debug.ballSpeedLog == 1 then
-            vardump(self.game.ball.velocity:len())
-        end
-        self.localFrame = self.localFrame + 1
-        self.states:push(self.game:getState())
+        self:advanceFrame()
     end
     -- MVP2: sync and slow down if opponent is lagging
 end
@@ -222,12 +218,17 @@ function NetworkGame:handleRollback(newConfirmedFrame)
         if Debug and Debug.netcodeLog > 1 then
             print("FF advancing game. Frame: " .. self.localFrame)
         end
-        self.game:advanceFrame()
-        if Debug and Debug.ballSpeedLog == 1 then
-            vardump(self.game.ball.velocity:len())
-        end
-        self.localFrame = self.localFrame + 1
-        self.states:push(self.game:getState())
+        self:advanceFrame()
+    end
+end
+
+function NetworkGame:advanceFrame()
+    self.game:advanceFrame()
+    self.localFrame = self.localFrame + 1
+    local gameState = self.game:getState()
+    self.states:push(gameState)
+    if Debug and Debug.replayDebug == 1 then
+        self.replay[self.localFrame] = gameState
     end
 end
 

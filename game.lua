@@ -23,7 +23,7 @@ function Game:init(inputSource)
     self.ball_start = {x = self.arena_start.x + self.arena_width/2 , y = self.arena_start.y + self.arena_height/2}
     self.ball = {shape = self.hc:circle(self.ball_start.x, self.ball_start.y, self.ball_range), velocity = Vector(0, 0) }
     self.ball.shape.type = 'ball'
-    self.ball_max_speed = 10
+    self.ball_max_speed = 8
     self.ball_friction = 0.991
 
     local border_width = 250
@@ -148,19 +148,19 @@ function Game:getPlayerdx(target, playerNum)
 end
 
 function Game:advanceFrame()
-    local iterations = 10
+    local iterations = 4
     local inputs = self.inputSource()
     local player_dPos = {}
     player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
     player_dPos[2] = self:getPlayerdx(Vector(inputs[2].x, inputs[2].y), 2) / iterations
 
     local i = 1
-    while i < iterations do
+    while i <= iterations do
         self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
         self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
         local cx, cy = self.ball.shape:center()
         for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
-            self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/10
+            self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
         end
         if self.ball.velocity:len() > self.ball_max_speed then
             self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
