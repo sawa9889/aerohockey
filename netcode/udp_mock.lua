@@ -26,7 +26,7 @@ function UdpMock:update(dt)
     self.timer:update(dt)
     local rnd = love.math.random(100)
     if rnd > 98 then
-        self.lag = 0.01
+        self.lag = 0.1
         self.timer:after(
         0.3,
         function()

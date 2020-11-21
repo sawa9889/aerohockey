@@ -17,7 +17,8 @@ end
 function ReplayGame:update(dt)
     if not self.isPaused then
         if Debug and Debug.replayDebug == 1 and self.replay[self.frame] then
-            vardump(self.replay[self.frame], self.game:getState())
+            --vardump(self.frame, self.replay[self.frame].ball, self.game:getState().ball)
+            print("Frame: " .. self.frame .. " Ball desync: " .. (self.replay[self.frame].ball.position - self.game:getState().ball.position):len())
         end
         if not self.inputs[self.frame] or not self.inputs[self.frame][1] or not self.inputs[self.frame][2] then
             print("load!")
@@ -30,7 +31,6 @@ function ReplayGame:update(dt)
 end
 
 function ReplayGame:getGameInputs()
-    vardump(self.frame, self.inputs[self.frame])
     return self.inputs[self.frame]
 end
 

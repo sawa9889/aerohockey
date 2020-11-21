@@ -17,7 +17,7 @@ function RingBuffer:push(item)
 end
 
 function RingBuffer:peek()
-    return self.elements[self.head]
+    return self.elements[self.head-1 > 0 and self.head-1 or self.size]
 end
 
 function RingBuffer:pop()
