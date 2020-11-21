@@ -4,7 +4,8 @@ Debug = {
     showStatesLoadSave = 0,
     netcodeLog = 4,
     ballSpeedLog = 0,
-    replayDebug = 1
+    replayDebug = 1,
+    visualDesyncDebug = 0
 }
 
 -- usage: vardump(x1, test, myVar) or vardump({ship = self, dt = dt})

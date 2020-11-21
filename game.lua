@@ -109,7 +109,7 @@ function Game:loadState(state)
     end
     self.players[1]:moveTo(state.players[1].x, state.players[1].y)
     self.players[2]:moveTo(state.players[2].x, state.players[2].y)
-    self.ball.velocity = state.ball.velocity
+    self.ball.velocity = state.ball.velocity:clone()
     self.ball.shape:moveTo(state.ball.position.x, state.ball.position.y)
 end
 
@@ -147,8 +147,23 @@ function Game:getPlayerdx(target, playerNum)
     return target - playerPos
 end
 
+function Game:roundBallVectors()
+    -- fkn lua doesn't know how to round
+    local function round(num, numDecimalPlaces)
+        local mult = 10^(numDecimalPlaces or 0)
+        return math.floor(num * mult + 0.5) / mult
+    end
+    local decPlaces = 5
+    self.ball.velocity.x = round(self.ball.velocity.x, decPlaces)
+    self.ball.velocity.y = round(self.ball.velocity.y, decPlaces)
+    local ballPos = Vector(self.ball.shape:center())
+    ballPos.x = round(ballPos.x, decPlaces)
+    ballPos.y = round(ballPos.y, decPlaces)
+    self.ball.shape:moveTo(ballPos:unpack())
+end
+
 function Game:advanceFrame()
-    local iterations = 4
+    local iterations = 10
     local inputs = self.inputSource()
     local player_dPos = {}
     player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
@@ -158,7 +173,6 @@ function Game:advanceFrame()
     while i <= iterations do
         self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
         self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
-        local cx, cy = self.ball.shape:center()
         for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
             self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
         end
@@ -169,6 +183,10 @@ function Game:advanceFrame()
         i = i + 1
     end
     self.ball.velocity = self.ball.velocity * self.ball_friction
+
+    self:roundBallVectors() -- @hack: it keeps to desync on some rounding errors
+    -- single different digit on 10^-12 gets bigger over time and causes desync
+    -- hopefully, it doesn't get big enough to get through rounding
 
     for shape, delta in pairs(self.hc:collisions(self.arena.left_gate)) do
         if shape.type == 'ball' then
