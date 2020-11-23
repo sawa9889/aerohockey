@@ -1,6 +1,6 @@
 local Timer = require "lib.hump.timer"
 require 'love.math'
-
+require 'engine.debug'
 local UdpMock = {
     timer = Timer.new(),
     lag = 0.01,

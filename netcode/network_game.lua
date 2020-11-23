@@ -1,15 +1,11 @@
 local Vector = require "lib.hump.vector"
 
 local maxRollback = config.network.maxRollback
+local delay = config.network.delay
 local RingBuffer = require "netcode.ring_buffer"
 
+local NetworkManager = require "netcode.network_manager"
 local NetworkPackets = require "netcode.network_packets"
-
-local networkInput  = love.thread.getChannel("networkControl")
-local networkOutput = love.thread.getChannel("networkOutput")
-
-local networkManagerThread = love.thread.newThread("netcode/network_manager.lua")
-networkManagerThread:start()
 
 local function log(level, message)
     if not Debug or Debug.netcodeLog < level then
@@ -34,7 +30,7 @@ local NetworkGame = {
     predictedInputs = {},
     confirmedFrame = delay,
     localFrame = 1,
-    delay = 3
+    delay = delay
 }
 
 function NetworkGame:enter(prevState, game)
@@ -51,23 +47,22 @@ function NetworkGame:enter(prevState, game)
 end
 
 function NetworkGame:update(dt)
+    NetworkManager:update(dt)
 
     local localInputs = self:getLocalInputs()
     self:addInputs(self.localFrame + self.delay, 1, localInputs)
-    networkInput:push( {
-        command = "send", packet = NetworkPackets.Inputs(
-            {
-                Vector(800 - localInputs.x, 490 - localInputs.y)
-            },
-            self.localFrame + self.delay, self.confirmedFrame)
-    } )
+
+    local localInputsPacket = NetworkPackets.Inputs(
+        { Vector(800 - localInputs.x, 490 - localInputs.y) },
+        self.localFrame + self.delay,
+        self.confirmedFrame
+    )
+    NetworkManager:send(localInputsPacket)
     log(4, "Sent inputs for " .. self.localFrame + self.delay)
 
-    while networkOutput:peek() do
-        local channelMessage = networkOutput:pop()
-        if channelMessage.type == "packet" then
-            self:handlePacket(channelMessage.data)
-        end
+    local remoteInputsPackets = NetworkManager:receive("Inputs")
+    for _, packet in ipairs(remoteInputsPackets) do
+        self:handlePacket(packet)
     end
 
     local newConfirmedFrame = self:getConfirmedFrame()
@@ -219,19 +214,17 @@ function NetworkGame:advanceFrame()
 end
 
 function NetworkGame:handlePacket(packet)
-    if packet.type == NetworkPackets.types.inputs then
-        local frame = packet.startFrame
-        log(4, "Got inputs for frame "..frame..": ")
-        log(5, packet.inputs)
-        for _, input in ipairs(packet.inputs) do
-            input = Vector(input.x, input.y) -- wtf
-            if frame < self.confirmedFrame then
-                log(2, "Received conflicting packet for frame "..frame.." but frame " .. self.confirmedFrame .. " is confirmed")
-            else
-                self:addInputs(frame, self.opponent, input)
-            end
-            frame = frame + 1
+    local frame = packet.startFrame
+    log(4, "Got inputs for frame "..frame..": ")
+    log(5, packet.inputs)
+    for _, input in ipairs(packet.inputs) do
+        input = Vector(input.x, input.y) -- @fixme ?
+        if frame < self.confirmedFrame then
+            log(2, "Received conflicting packet for frame "..frame.." but frame " .. self.confirmedFrame .. " is confirmed")
+        else
+            self:addInputs(frame, self.opponent, input)
         end
+        frame = frame + 1
     end
 end
 

@@ -1,65 +1,51 @@
--- this is a love thread
--- usage:
--- local networkManagerThread = love.thread.newThread( require "netcode.network_manager" )
--- networkManagerThread:start()
-require 'love.timer'
+local networkInput  = love.thread.getChannel("networkControl")
+local networkOutput = love.thread.getChannel("networkOutput")
 
-local gameState = "menu" -- waiting_for_client, connecting, ready_to_play, playing, disconnected, error
-local player = 1 -- 2
+local networkManagerThread = love.thread.newThread("netcode/network_thread.lua")
+networkManagerThread:start()
 
-local running = true
+local NetworkPackets = require "netcode.network_packets"
 
-local gameInputChannel     = love.thread.getChannel("networkControl")
-local networkOutputChannel = love.thread.getChannel("networkOutput")
+local NetworkManager = {
+    received = {}
+}
 
-local udpSocket = require "netcode.udp_mock"
-
-local function connect(ip, port)
+function NetworkManager:send(packet)
+    networkInput:push({ command = "send", packet = packet:serialize() })
 end
 
-local function awaitConnection(port)
+function NetworkManager:receive(packetType)
+    local type = NetworkPackets.types[packetType]
+    local packets = self.received[type]
+    self.received[type] = {}
+    if not packets then packets = {} end -- nil handling
+    return packets
 end
 
-local function isConnected()
+function NetworkManager:connect(ip, port)
 end
 
-local function sendPacket(packet)
-    udpSocket:send(packet)
+function NetworkManager:awaitConnection(port)
 end
 
-local function getRecievedPackets()
-    return udpSocket:receive()
+function NetworkManager:isConnected()
 end
 
-local function handleTask(task)
-    if task.command == "connect" then
-        connect(task.ip, task.port)
-    elseif task.command == "awaitConnection" then
-        awaitConnection(task.port)
-    elseif task.command == "send" then
-        sendPacket(task.packet)
-    elseif task.command == "exit" then
-        running = false
-    end
-end
-
-local lastTime = love.timer.getTime()
-while running do
-    dt = love.timer.getTime() - lastTime
-    lastTime = love.timer.getTime()
-
-    -- check if still online
-    recieved = getRecievedPackets()
-    for _, packet in ipairs(recieved) do
-        networkOutputChannel:push( { type = "packet", data = packet } )
-    end
-    while gameInputChannel:peek() do
-        local task = gameInputChannel:pop()
-        if task.command then
-            handleTask(task)
+function NetworkManager:update(dt)
+    while networkOutput:peek() do
+        local channelMessage = networkOutput:pop()
+        if channelMessage.type == "packet" then
+            self:_saveReceived(channelMessage.data)
         end
     end
-
-    udpSocket:update(dt) -- TODO: del this?
-    love.timer.sleep(0.016)
 end
+
+function NetworkManager:_saveReceived(packet)
+    packet = NetworkPackets.deserialize(packet)
+    if not self.received[packet.type] then
+        self.received[packet.type] = {}
+    end
+    table.insert(self.received[packet.type], packet)
+end
+
+return NetworkManager

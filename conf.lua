@@ -1,7 +1,9 @@
 config = {
     network = {
+        packetMagic = "AERO",
+        protocolVersion = "1",
         maxRollback = 30,
-        
+        delay = 3
     }
 }
 
