@@ -33,9 +33,11 @@ local NetworkGame = {
     delay = delay
 }
 
-function NetworkGame:enter(prevState, game)
+function NetworkGame:enter(prevState, game, isServer)
     self.localFrame = 1
     self.confirmedFrame = self.delay
+    self.inputs = {}
+    self.replay = {}
     local i = 1
     while i <= self.delay do
         self.inputs[i] = stubInput
@@ -229,6 +231,11 @@ function NetworkGame:handlePacket(packet)
 end
 
 function NetworkGame:keypressed(key, scancode, isrepeat)
+    if key == "escape" then
+        -- @todo send disconnect to other player
+        replay.inputs = self.inputs -- replay is global
+        replay.states = self.replay
+    end
 end
 
 function NetworkGame:draw()

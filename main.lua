@@ -1,16 +1,17 @@
 require "utils"
 require "engine.debug"
 
-local StateManager = require "lib.hump.gamestate"
-local states = {
+StateManager = require "lib.hump.gamestate"
+states = {
+    menu = require "menu",
     netgame = require "netcode.network_game",
-    replay = require "replay_game"
+    replay = require "replay_game",
 }
 
-local aerohockeyGame = require "game"
+replay = {}
 
 function love.load()
-    StateManager.switch(states.netgame, aerohockeyGame)
+    StateManager.switch(states.menu)
 end
 
 function love.draw()
@@ -19,10 +20,8 @@ end
 
 function love.keypressed(key, scancode, isrepeat)
     StateManager.keypressed(key, scancode, isrepeat)
-    if key == "r" then
-        if StateManager.current().inputs then
-            StateManager.switch(states.replay, require "game", StateManager.current().inputs, StateManager.current().replay)
-        end
+    if key == "escape" then
+        StateManager.switch(states.menu)
     end
 end
 

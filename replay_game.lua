@@ -7,6 +7,7 @@ local ReplayGame = {
 function ReplayGame:enter(prevState, game, inputs, replayStates)
     self.inputs = inputs
     self.isPaused = false
+    self.frame = 1
     self.game = game
     self.game:init(function() return self:getGameInputs() end)
     if Debug and Debug.visualDesyncDebug == 1 then
