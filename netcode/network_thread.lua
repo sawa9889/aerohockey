@@ -12,23 +12,43 @@ local running = true
 local gameInputChannel     = love.thread.getChannel("networkControl")
 local networkOutputChannel = love.thread.getChannel("networkOutput")
 
-local udpSocket = require "netcode.udp_mock"
+local socket = require("socket")
+local udp = socket.udp()
+udp:settimeout(0)
+-- local socket = require "netcode.udp_mock"
 
-local function sendPacket(packet)
-    udpSocket:send(packet)
+local function sendPacket(packet, ip, port)
+    udp:sendto(packet, ip, port)
+end
+
+local function awaitConnection(host, port)
+    udp:setsockname(host, port)
 end
 
 local function getRecievedPackets()
-    return udpSocket:receive()
+    local packets = {}
+    local circuitBreaker = 100
+    while circuitBreaker > 0 do
+        local data, ipOrMsg, portOrNil = udp:receivefrom()
+        if not data then
+            if ipOrMsg ~= "timeout" then
+                print("Network error: " .. ipOrMsg)
+            end
+            break
+        end
+        table.insert(packets, { packet = data, ip = ipOrMsg, port = portOrNil })
+        circuitBreaker = circuitBreaker + 1
+    end
+    return packets
 end
 
 local function handleTask(task)
     if task.command == "connect" then
         connect(task.ip, task.port)
     elseif task.command == "awaitConnection" then
-        awaitConnection(task.port)
+        awaitConnection(task.host, task.port)
     elseif task.command == "send" then
-        sendPacket(task.packet)
+        sendPacket(task.packet, ip, port)
     elseif task.command == "exit" then
         running = false
     end
@@ -51,6 +71,5 @@ while running do
         end
     end
 
-    udpSocket:update(dt) -- TODO: del this?
     love.timer.sleep(0.016)
 end

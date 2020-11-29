@@ -3,7 +3,9 @@ config = {
         packetMagic = "AERO",
         protocolVersion = "1",
         maxRollback = 30,
-        delay = 3
+        delay = 3,
+        maxRemotePlayers = 1,
+        connectInGame = false,
     }
 }
 

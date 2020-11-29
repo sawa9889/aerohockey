@@ -4,7 +4,7 @@ local maxRollback = config.network.maxRollback
 local delay = config.network.delay
 local RingBuffer = require "netcode.ring_buffer"
 
-local NetworkManager = require "netcode.network_manager"
+local NetworkManager = NetworkManager
 local NetworkPackets = require "netcode.network_packets"
 
 local function log(level, message)
@@ -23,6 +23,7 @@ local stubInput = { [1] = Vector(0, 0), [2] = Vector(0, 0) }
 local NetworkGame = {
     player = 1,
     opponent = 2,
+    remotePlayerId = nil,
     states = RingBuffer(maxRollback),
     isPaused = false,
     inputs = {},
@@ -33,7 +34,20 @@ local NetworkGame = {
     delay = delay
 }
 
-function NetworkGame:enter(prevState, game, isServer)
+function NetworkGame:enter(prevState, game, localPlayer)
+    if localPlayer == 1 then
+        self.player = 1
+        self.opponent = 2
+    else
+        self.player = 2
+        self.opponent = 1
+    end
+    local netPlayers = NetworkManager:getPlayers("connected")
+    for k, v in pairs(netPlayers) do
+        self.remotePlayerId = k
+        break -- @hack
+    end
+
     self.localFrame = 1
     self.confirmedFrame = self.delay
     self.inputs = {}
@@ -216,6 +230,11 @@ function NetworkGame:advanceFrame()
 end
 
 function NetworkGame:handlePacket(packet)
+    if packet.player ~= self.remotePlayerId then
+        print("Ignoring packet from unknown player " .. packet.player)
+        return
+    end
+    packet = packet.packet
     local frame = packet.startFrame
     log(4, "Got inputs for frame "..frame..": ")
     log(5, packet.inputs)
