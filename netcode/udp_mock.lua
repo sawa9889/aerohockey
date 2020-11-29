@@ -17,7 +17,7 @@ function UdpMock:send(packet)
 end
 
 function UdpMock:receive()
-    local packets = self.received
+    local packets = self.received -- @fixme: real udp socket returns 1 packet at the time
     self.received = {}
     return packets
 end
