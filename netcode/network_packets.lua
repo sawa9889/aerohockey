@@ -94,7 +94,11 @@ function packets.deserialize(packet)
     end
     local packetType = packets.idToType[tonumber(tokens[3])]
     if packetType and packets[packetType] then
-        packet = packets[packetType].fromPacket(tokens)
+        if packets[packetType].fromPacket then
+            packet = packets[packetType].fromPacket(tokens)
+        else
+            packet = packets[packetType]()
+        end
     end
     return packet
 end
