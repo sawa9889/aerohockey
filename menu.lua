@@ -12,6 +12,7 @@ function Menu:enter(prevState, game)
 end
 
 function Menu:update(dt)
+    NetworkManager:update(dt)
     if NetworkManager:connectedPlayersNum() == 1 then
         StateManager.switch(states.netgame, aerohockeyGame, self.localPlayer)
     end

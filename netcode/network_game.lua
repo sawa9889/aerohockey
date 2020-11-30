@@ -43,6 +43,7 @@ function NetworkGame:enter(prevState, game, localPlayer)
         self.opponent = 1
     end
     local netPlayers = NetworkManager:getPlayers("connected")
+    vardump(netPlayers)
     for k, v in pairs(netPlayers) do
         self.remotePlayerId = k
         break -- @hack
@@ -66,10 +67,10 @@ function NetworkGame:update(dt)
     NetworkManager:update(dt)
 
     local localInputs = self:getLocalInputs()
-    self:addInputs(self.localFrame + self.delay, 1, localInputs)
+    self:addInputs(self.localFrame + self.delay, self.player, localInputs)
 
     local localInputsPacket = NetworkPackets.Inputs(
-        { Vector(800 - localInputs.x, 490 - localInputs.y) },
+        { Vector(localInputs.x, localInputs.y) },
         self.localFrame + self.delay,
         self.confirmedFrame
     )
@@ -85,6 +86,8 @@ function NetworkGame:update(dt)
     if newConfirmedFrame > self.confirmedFrame then
         self:handleRollback(newConfirmedFrame)
     end
+
+    self.isPaused = ( self.localFrame - self.confirmedFrame ) >= maxRollback
 
     if not self.isPaused then
         log(3, "Advancing game. Frame: " .. self.localFrame)
@@ -232,6 +235,7 @@ end
 function NetworkGame:handlePacket(packet)
     if packet.player ~= self.remotePlayerId then
         print("Ignoring packet from unknown player " .. packet.player)
+        vardump(packet.player,self.remotePlayerId)
         return
     end
     packet = packet.packet

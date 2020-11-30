@@ -17,8 +17,8 @@ local NetworkManager = {
     connectInGame = netConfig.connectInGame
 }
 
-function NetworkManager:sendTo(player, packet)
-    local player = self.remotePlayers[player]
+function NetworkManager:sendTo(playerId, packet)
+    local player = self.remotePlayers[playerId]
     networkInput:push({
         command = "send",
         packet = packet:serialize(),
@@ -29,7 +29,7 @@ end
 
 function NetworkManager:send(packet)
     for id, player in pairs(self.remotePlayers) do
-        self.sendTo(id, packet)
+        self:sendTo(id, packet)
     end
 end
 
@@ -44,10 +44,15 @@ end
 function NetworkManager:connectTo(ip, port)
     self.remotePlayers["server"] = { ip = ip, port = port, state = "connecting" }
     self.role = "client"
+    networkInput:push({
+        command = "connect",
+        host = ip,
+        port = port
+    })
 end
 
 function NetworkManager:startServer(port, maxRemotePlayers)
-    self.isServer = "server"
+    self.role = "server"
     if maxRemotePlayers then
         self.maxRemotePlayers = maxRemotePlayers
     end
@@ -66,7 +71,7 @@ function NetworkManager:getPlayers(state)
 end
 
 function NetworkManager:getOrAddPlayer(ip, port)
-    for id, player in ipairs(self.remotePlayers) do
+    for id, player in pairs(self.remotePlayers) do
         if ip == player.ip and port == player.port then
             return id
         end
@@ -83,6 +88,7 @@ function NetworkManager:update(dt)
     if self.role == "client" then
         local server = self.remotePlayers["server"]
         if server.state == "connecting" then
+            print("send hello")
             self:sendTo("server", NetworkPackets.Hello())
             server.state = "hello_sent"
         elseif server.state == "hello_sent" then
@@ -90,14 +96,18 @@ function NetworkManager:update(dt)
             for _, ack in ipairs(acks) do
                 -- @todo check ip port?
                 server.state = "connected"
+                print("Client connected to server!")
             end
         end
     elseif self.role == "server" then
         local helloPackets = self:receive("Hello")
         for _, hello in ipairs(helloPackets) do
-            local player = self.remotePlayers[hello.player]
+            local playerId = hello.player
+            local player = self.remotePlayers[playerId]
             -- if playersNum > maxRemotePlayers then send error and disconnect
+            self:sendTo(playerId, NetworkPackets.HelloAck())
             player.state = "connected"
+            print("Player connected")
         end
     end
     while networkOutput:peek() do
@@ -109,9 +119,10 @@ function NetworkManager:update(dt)
 end
 
 function NetworkManager:_saveReceived(data)
-    local packet = NetworkPackets.deserialize(data.packet)
     local playerId = self:getOrAddPlayer(data.ip, data.port)
-    if not packet or not playerId then return end
+    if not playerId then return end
+    
+    local packet = NetworkPackets.deserialize(data.packet)
 
     if not self.received[packet.type] then
         self.received[packet.type] = {}
