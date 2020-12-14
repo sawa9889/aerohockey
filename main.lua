@@ -8,6 +8,8 @@ states = {
     replay = require "replay_game",
 }
 
+love.graphics.setFont(love.graphics.newFont("resource/fonts/m3x6.ttf", 16))
+
 replay = {}
 
 function love.load()

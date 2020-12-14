@@ -18,7 +18,6 @@ udp:settimeout(0)
 local isConnected = false
 local peer = {}
 local listen = false
--- local socket = require "netcode.udp_mock"
 
 local function sendPacket(packet, ip, port)
     local result, msg

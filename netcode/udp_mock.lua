@@ -1,11 +1,40 @@
 local Timer = require "lib.hump.timer"
 require 'love.math'
 require 'engine.debug'
+
+local SocketMock = {
+
+}
+-- он так работать не будет, нужно смотреть в пакеты и отвечать соответственно
 local UdpMock = {
     timer = Timer.new(),
     lag = 0.01,
     received = {}
 }
+
+function SocketMock:udp()
+    return UdpMock
+end
+
+function UdpMock:settimeout(seconds)
+end
+
+function UdpMock:setsockname(host, port)
+    self.peer = {host = host, port = port}
+    self.isConnected = true
+    self.listen = false
+    return 1
+end
+
+function UdpMock:setpeername(host, port)
+    self.peer = {host = host, port = port}
+    self.isConnected = true
+    self.listen = true
+end
+
+function UdpMock:sendto(packet, ip, port)
+    return self:send(packet)
+end
 
 function UdpMock:send(packet)
     self.timer:after(
@@ -14,6 +43,11 @@ function UdpMock:send(packet)
             table.insert(self.received, packet)
         end
     )
+    return 1
+end
+
+function UdpMock:receivefrom()
+    return self:receive(), self.peer.host, self.peer.port
 end
 
 function UdpMock:receive()
@@ -36,4 +70,4 @@ function UdpMock:update(dt)
     end
 end
 
-return UdpMock
+return SocketMock
