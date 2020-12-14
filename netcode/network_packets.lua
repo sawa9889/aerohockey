@@ -59,7 +59,7 @@ local packets = {
             return " " .. self.ackFrame .. " " .. self.startFrame .. " " .. #self.inputs .. inputs
         end
     },
-    InputsAck = Class {
+    InputsAck = Class { -- @todo: maybe not use x2 number of packets, and put ackFrame to Inputs?
         __includes = Packet,
         init = function (self, ackFrame)
             self.ackFrame = ackFrame
