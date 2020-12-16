@@ -100,5 +100,5 @@ while running do
         end
     end
 
-    love.timer.sleep(0.016)
+    love.timer.sleep(0.005)
 end

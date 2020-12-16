@@ -4,6 +4,7 @@ config = {
         protocolVersion = "1",
         maxRollback = 30,
         delay = 3,
+        syncSmoothing = 1,
         maxRemotePlayers = 1,
         connectInGame = false,
     }

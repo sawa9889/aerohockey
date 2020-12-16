@@ -2,6 +2,7 @@ local Vector = require "lib.hump.vector"
 
 local maxRollback = config.network.maxRollback
 local delay = config.network.delay
+local syncSmoothing = config.network.syncSmoothing
 local RingBuffer = require "netcode.ring_buffer"
 
 local NetworkManager = NetworkManager
@@ -31,6 +32,7 @@ local NetworkGame = {
     predictedInputs = {},
     confirmedFrame = delay,
     confirmedByRemoteFrame = 1,
+    syncFrames = 0,
     displayFrame = 1,
     inputFrame = 1 + delay,
     delay = delay
@@ -80,8 +82,15 @@ function NetworkGame:update(dt)
 
     self.isPaused = ( self.displayFrame - self.confirmedFrame ) >= maxRollback
 
+    self:calculateFrameAdvantage()
+    if self.syncFrames >= 1 then
+        self.syncFrames = self.syncFrames - 1
+        self.isPaused = true
+        log(3, "Waiting a frame to sync")
+    end
+
     if self.isPaused then
-        log(3, "The game is PAUSED")
+        log(4, "The game is PAUSED")
     else
         local localInputs = self:getLocalInputs()
         self:addInputs(self.inputFrame, self.player, localInputs)
@@ -96,7 +105,6 @@ function NetworkGame:update(dt)
         log(3, "Advancing game. Frame: " .. self.displayFrame)
         self:advanceFrame()
     end
-    -- MVP2: sync and slow down if opponent is lagging
 end
 
 function NetworkGame:addInputs(frame, player, inputs)
@@ -225,6 +233,19 @@ function NetworkGame:handleRollback(newConfirmedFrame)
     self.confirmedFrame = newConfirmedFrame
 end
 
+function NetworkGame:calculateFrameAdvantage()
+    local framesToRemote = self.inputFrame-self.confirmedFrame
+    local framesRoundTrip = self.inputFrame-self.confirmedByRemoteFrame
+    local frameAdvantage = framesRoundTrip - framesToRemote * 2
+    log(4, "Frame advantage is " .. frameAdvantage)
+    self.syncFrames = self.syncFrames - frameAdvantage * syncSmoothing / 60 -- 60 fps
+    if frameAdvantage < 0 then
+        if self.syncFrames < 0 then
+            self.syncFrames = 0
+        end
+    end
+end
+
 function NetworkGame:advanceFrame()
     self.game:advanceFrame()
     self.displayFrame = self.displayFrame + 1
@@ -300,23 +321,24 @@ end
 function NetworkGame:drawDebugWidget()
     love.graphics.print(
         string.format(
-            "display: %5d\nconfirm: %5d (%3d)\nremConf: %5d (%3d)\n",
+            "display: %5d\nconfirm: %5d (%3d)\nremConf: %5d (%3d)\nsyncFrame: %5.2f\n",
             self.displayFrame,
-            self.confirmedFrame, self.confirmedFrame-self.displayFrame,
-            self.confirmedByRemoteFrame, self.confirmedByRemoteFrame-self.displayFrame
+            self.confirmedFrame, self.confirmedFrame-self.inputFrame,
+            self.confirmedByRemoteFrame, self.confirmedByRemoteFrame-self.inputFrame,
+            self.syncFrames
         ), 2, 16)
     local i = 1
     local frame = self.displayFrame - maxRollback
     while i < 100 do
         love.graphics.setColor(0.3,1,0.3)
+        if frame + i >= self.displayFrame then
+            love.graphics.setColor(0.9,0.7,0)
+        end
         if frame + i == self.confirmedFrame then
             love.graphics.setColor(0,0.4,0)
         end
         if frame + i == self.confirmedByRemoteFrame then
             love.graphics.setColor(0.5,0.5,0.9)
-        end
-        if frame + i >= self.displayFrame then
-            love.graphics.setColor(0.9,0.7,0)
         end
         if self.inputs[frame + i] then
             if self.inputs[frame + i][1] then
