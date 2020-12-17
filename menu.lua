@@ -1,6 +1,9 @@
 -- This is gamestate
 
 NetworkManager = require "netcode.network_manager" -- yeah, global
+WindowManager  = require "engine.ui.window_manager"
+Button         = require "engine.ui.button"
+InputBox       = require "engine.ui.input_box"
 
 local aerohockeyGame = require "game"
 
@@ -8,34 +11,78 @@ local Menu = {
     localPlayer = 1,
 }
 
+local MenuWindowManager
 function Menu:enter(prevState, game)
+    local scale = 2
+    love.graphics.setFont(love.graphics.newFont("resource/fonts/m3x6.ttf", 16*scale))
+    local buttonHeight, buttonWidth = 25*scale, 100*scale
+    local inputHeight, inputWidth = 25*scale, 100*scale
+    local buttonsGap, inputsGap = 50*scale, 10*scale
+    local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
+    MenuWindowManager = WindowManager()
+    MenuWindowManager:registerObject(InputBox(x, 
+                                              y, 
+                                              inputWidth, 
+                                              inputHeight, 
+                                              nil, 
+                                              nil,
+                                              'Port'))
+    MenuWindowManager:registerObject(InputBox(x, 
+                                              y + inputHeight + inputsGap, 
+                                              inputWidth, 
+                                              inputHeight, 
+                                              nil, 
+                                              nil,
+                                              'Adress'))
+    MenuWindowManager:registerObject(Button(x + inputWidth + buttonsGap, 
+                                            y, 
+                                            buttonWidth, 
+                                            buttonHeight, 
+                                            function() 
+                                                NetworkManager:startServer(MenuWindowManager.objects[1]:getText(), 1)
+                                                self.localPlayer = 1
+                                            end, 
+                                            'Start server'))
+    MenuWindowManager:registerObject(Button(x + inputWidth + buttonsGap, 
+                                            y + (buttonHeight + inputsGap), 
+                                            buttonWidth, 
+                                            buttonHeight, 
+                                            function() 
+                                                  NetworkManager:connectTo(MenuWindowManager.objects[2]:getText(), MenuWindowManager.objects[1]:getText())
+                                                  self.localPlayer = 2
+                                            end, 
+                                            'Start connect'))
+    MenuWindowManager:registerObject(Button(x, 
+                                            y + (buttonHeight + inputsGap)*2, 
+                                            buttonWidth, 
+                                            buttonHeight, 
+                                            function() 
+                                                if replay.inputs then
+                                                    StateManager.switch(states.replay, require "game", replay.inputs, replay.states)
+                                                end
+                                            end, 
+                                            'Show replay'))
 end
 
 function Menu:update(dt)
     NetworkManager:update(dt)
+    MenuWindowManager:update(dt)
     if NetworkManager:connectedPlayersNum() == 1 then
         StateManager.switch(states.netgame, aerohockeyGame, self.localPlayer)
     end
 end
 
-function Menu:keypressed(key, scancode, isrepeat)
-    if key == "1" then
-        NetworkManager:startServer(12345, 1)
-        self.localPlayer = 1
-    end
-    if key == "2" then
-        NetworkManager:connectTo("127.0.0.1", 12345)
-        self.localPlayer = 2
-    end
-    if key == "r" then
-        if replay.inputs then
-            StateManager.switch(states.replay, require "game", replay.inputs, replay.states)
-        end
-    end
+function Menu:keypressed(t)
+    MenuWindowManager:keypressed(t)
 end
 
+function Menu:mousepressed(x, y)
+    MenuWindowManager:mousepressed(x, y)
+end
+
+
 function Menu:draw()
-    love.graphics.print("Press \"1\" to start server\nPress \"2\" to connect to game\nPress \"R\" to load a replay")
+    MenuWindowManager:draw()
 end
 
 return Menu
