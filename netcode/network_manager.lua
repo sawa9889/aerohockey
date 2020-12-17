@@ -122,7 +122,14 @@ function NetworkManager:_saveReceived(data)
     local playerId = self:getOrAddPlayer(data.ip, data.port)
     if not playerId then return end
     
-    local packet = NetworkPackets.deserialize(data.packet)
+    local success, packetOrErr = pcall(function() return NetworkPackets.deserialize(data.packet) end)
+
+    if not success or not packetOrErr then
+        print("Ignoring malformed packet!")
+        vardump(packetOrErr, data)
+        return
+    end
+    local packet = packetOrErr
 
     if not self.received[packet.type] then
         self.received[packet.type] = {}

@@ -108,10 +108,18 @@ function packets.Inputs.fromPacket(tokens)
     local startFrame = tonumber(tokens[5])
     local inputs = {}
     local numOfInputs = tonumber(tokens[6])
+    if not ackFrame or not startFrame or not numOfInputs or numOfInputs <= 0 or ackFrame < 0 or startFrame < 0 then
+        error("Input packet is malformed")
+    end
     local i = 0
     while i < numOfInputs do
         local x, y = string.match(tokens[7+i], "(%w+),(%w+)")
-        table.insert(inputs, {x = tonumber(x), y = tonumber(y)})
+        x = tonumber(x)
+        y = tonumber(y)
+        if not x or not y then
+            error("Input sequence is malformed")
+        end
+        table.insert(inputs, {x = x, y = y})
         i = i + 1
     end
     return packets.Inputs(inputs, startFrame, ackFrame)
@@ -119,6 +127,9 @@ end
 
 function packets.InputsAck.fromPacket(tokens)
     local ackFrame = tonumber(tokens[4])
+    if not ackFrame or ackFrame < 0 then
+        error("Input packet is malformed")
+    end
     return packets.InputsAck(ackFrame)
 end
 
