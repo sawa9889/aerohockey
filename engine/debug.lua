@@ -3,6 +3,7 @@ Debug = {
     showFps = 1,
     showStatesLoadSave = 0,
     netcodeLog = 2,
+    netcodeDebugWidget = 1,
     ballSpeedLog = 0,
     replayDebug = 0,
     visualDesyncDebug = 0

@@ -5,11 +5,11 @@ local utf8 = require("utf8")
 -- Кнопка, умеет нажиматься и писать при этом в лог, все кнопки по хорошему должны наследоваться от этого класса и накидывать кастомные действия и картинки
 InputBox = Class {
 	__includes = UIobject,
-	init = function(self, x, y, width, height, click, unclick, tag)
+	init = function(self, x, y, width, height, click, unclick, tag, defaultText)
 		UIobject.init(self, x, y, width and width or 100, height and height or 50, tag)
 		self.clickInteraction = click and click or self.defaultClick
 		self.unclickInteraction = unclick and unclick or self.defaultUnclick
-		self.text = ''
+		self.text = defaultText or ''
 	end
 }
 

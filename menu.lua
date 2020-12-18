@@ -26,14 +26,14 @@ function Menu:enter(prevState, game)
                                               inputHeight, 
                                               nil, 
                                               nil,
-                                              'Port'))
+                                              'Port', "12345"))
     MenuWindowManager:registerObject(InputBox(x, 
                                               y + inputHeight + inputsGap, 
                                               inputWidth, 
                                               inputHeight, 
                                               nil, 
                                               nil,
-                                              'Adress'))
+                                              'Adress', "127.0.0.1"))
     MenuWindowManager:registerObject(Button(x + inputWidth + buttonsGap, 
                                             y, 
                                             buttonWidth, 

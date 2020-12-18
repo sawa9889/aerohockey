@@ -18,6 +18,7 @@ function love.load()
 end
 
 function love.draw()
+    love.graphics.setColor(1,1,1)
     StateManager.draw()
 end
 
@@ -32,9 +33,9 @@ end
 --     end
 -- end
 
-function love.keypressed(t)
-    StateManager.keypressed(t)
-    if t == "escape" then
+function love.keypressed(key, scancode, isrepeat)
+    StateManager.keypressed(key, scancode, isrepeat)
+    if key == "escape" then
         StateManager.switch(states.menu)
     end
 end
