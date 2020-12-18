@@ -25,6 +25,7 @@ local packetTypes = {
     InputsAck = 2,
     Hello = 3,
     HelloAck = 4,
+    Disconnect = 5
 }
 
 local function reverseMap(map)
@@ -80,6 +81,12 @@ local packets = {
         init = function (self)
             Packet.init(self, packetTypes.HelloAck)
         end
+    },
+    Disconnect = Class {
+        __includes = Packet,
+        init = function (self)
+            Packet.init(self, packetTypes.Disconnect)
+        end
     }
 }
 
@@ -89,8 +96,7 @@ function packets.deserialize(packet)
         table.insert(tokens, token)
     end
     if not isValidHeader(tokens[1], tokens[2]) then
-        print("Got invalid packet: " .. packet)
-        return
+        error("Got invalid header")
     end
     local packetType = packets.idToType[tonumber(tokens[3])]
     if packetType and packets[packetType] then
@@ -99,6 +105,8 @@ function packets.deserialize(packet)
         else
             packet = packets[packetType]()
         end
+    else
+        error("Unrecognized packet type: " .. tokens[3])
     end
     return packet
 end

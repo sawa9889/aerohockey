@@ -4,8 +4,6 @@
 -- networkManagerThread:start()
 require 'love.timer'
 require 'engine.debug'
-local gameState = "menu" -- waiting_for_client, connecting, ready_to_play, playing, disconnected, error
-local player = 1 -- 2
 
 local running = true
 
@@ -13,11 +11,22 @@ local gameInputChannel     = love.thread.getChannel("networkControl")
 local networkOutputChannel = love.thread.getChannel("networkOutput")
 
 local socket = require("socket")
-local udp = socket.udp()
-udp:settimeout(0)
-local isConnected = false
-local peer = {}
-local listen = false
+
+local udp, isConnected, peer, listen
+
+local function reset()
+    print("SOCKET RESET!")
+    if udp then
+        udp:close()
+    end
+    udp = socket.udp()
+    udp:settimeout(0)
+    isConnected = false
+    peer = {}
+    listen = false
+end
+
+reset()
 
 local function sendPacket(packet, ip, port)
     local result, msg
@@ -76,8 +85,8 @@ local function handleTask(task)
         awaitConnection(task.host, task.port)
     elseif task.command == "send" then
         sendPacket(task.packet, task.ip, task.port)
-    elseif task.command == "exit" then
-        running = false
+    elseif task.command == "close" then
+        reset()
     end
 end
 

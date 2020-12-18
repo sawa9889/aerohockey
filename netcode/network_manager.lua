@@ -8,14 +8,18 @@ local NetworkPackets = require "netcode.network_packets"
 
 local netConfig = config.network
 
-local NetworkManager = {
-    received = {},
-    gameStarted = false,
-    role = nil, -- server, client
-    remotePlayers = {}, -- { [1] = {ip = 10.10.0.1, port = 12345, state = "connected"}, [2] = { ... }}
-    maxRemotePlayers = netConfig.maxRemotePlayers,
-    connectInGame = netConfig.connectInGame
-}
+local NetworkManager = {}
+
+function NetworkManager:init()
+    self.received = {}
+    self.gameStarted = false
+    self.role = nil -- server, client
+    self.remotePlayers = {} -- { [1] = {ip = 10.10.0.1, port = 12345, state = "connected"}, [2] = { ... }}
+    self.maxRemotePlayers = netConfig.maxRemotePlayers
+    self.connectInGame = netConfig.connectInGame
+end
+
+NetworkManager:init()
 
 function NetworkManager:sendTo(playerId, packet)
     local player = self.remotePlayers[playerId]
@@ -42,6 +46,7 @@ function NetworkManager:receive(packetType) -- @todo player filtering?
 end
 
 function NetworkManager:connectTo(ip, port)
+    self:close()
     self.remotePlayers["server"] = { ip = ip, port = port, state = "connecting" }
     self.role = "client"
     networkInput:push({
@@ -52,6 +57,7 @@ function NetworkManager:connectTo(ip, port)
 end
 
 function NetworkManager:startServer(port, maxRemotePlayers)
+    self:close()
     self.role = "server"
     if maxRemotePlayers then
         self.maxRemotePlayers = maxRemotePlayers
@@ -63,11 +69,38 @@ function NetworkManager:startServer(port, maxRemotePlayers)
     })
 end
 
+function NetworkManager:disconnect(playerId)
+    local playersToDisconnect = {}
+    if not playerId then
+        for id, player in pairs(self:getPlayers("connected")) do
+            self:disconnect(id)
+        end
+    else
+        local player = self:getPlayer(playerId)
+        if player then
+            self:sendTo(playerId, NetworkPackets.Disconnect())
+            player.state = "disconnected"
+        end
+    end
+end
+
+function NetworkManager:close()
+    self:disconnect()
+    networkInput:push({
+        command = "close"
+    })
+    self:init()
+end
+
 function NetworkManager:getPlayers(state)
     if not state then
         return self.remotePlayers
     end
     return filter(self.remotePlayers, function(it) return it.state == state end)
+end
+
+function NetworkManager:getPlayer(id)
+    return self.remotePlayers[id]
 end
 
 function NetworkManager:getOrAddPlayer(ip, port)
@@ -82,6 +115,16 @@ end
 
 function NetworkManager:connectedPlayersNum()
     return count(self.remotePlayers, function(it) return it.state == "connected" end)
+end
+
+function NetworkManager:handleDisconnectPackets()
+    local disconnectPackets = self:receive("Disconnect")
+    for _, packet in pairs(disconnectPackets) do
+        local player = self:getPlayer(packet.player)
+        if player then
+            player.state = "disconnected"
+        end
+    end
 end
 
 function NetworkManager:update(dt)
@@ -116,6 +159,7 @@ function NetworkManager:update(dt)
             self:_saveReceived(channelMessage.data)
         end
     end
+    self:handleDisconnectPackets()
 end
 
 function NetworkManager:_saveReceived(data)

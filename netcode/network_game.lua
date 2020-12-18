@@ -24,6 +24,7 @@ local stubInput = { [1] = Vector(0, 0), [2] = Vector(0, 0) }
 local NetworkGame = {
     player = 1,
     opponent = 2,
+    disconnected = false,
     remotePlayerId = nil,
     states = RingBuffer(maxRollback),
     isPaused = false,
@@ -51,10 +52,12 @@ function NetworkGame:enter(prevState, game, localPlayer)
         self.remotePlayerId = k
         break -- @hack
     end
+    self.disconnected = false
 
     self.displayFrame = 1
     self.inputFrame = self.displayFrame + self.delay
     self.confirmedFrame = self.delay
+    self.confirmedByRemoteFrame = 1
     self.inputs = {}
     self.replay = {}
     local i = 1
@@ -78,6 +81,16 @@ function NetworkGame:update(dt)
     local newConfirmedFrame = self:getConfirmedFrame()
     if newConfirmedFrame > self.confirmedFrame then
         self:handleRollback(newConfirmedFrame)
+    end
+
+    if self:remotePlayerIsDisconnected() then
+        self.isPaused = true
+        if not self.disconnected then
+            NetworkManager:close()
+            self.disconnected = true
+            log(2, "Remote player has disconnected!")
+        end
+        return
     end
 
     self.isPaused = ( self.displayFrame - self.confirmedFrame ) >= maxRollback
@@ -257,6 +270,10 @@ function NetworkGame:advanceFrame()
     end
 end
 
+function NetworkGame:remotePlayerIsDisconnected()
+    return not NetworkManager:getPlayer(self.remotePlayerId) or NetworkManager:getPlayer(self.remotePlayerId).state == "disconnected"
+end
+
 function NetworkGame:sendInputs(fromFrame)
     local inputsToSend = {}
     local i = fromFrame
@@ -276,6 +293,10 @@ end
 
 function NetworkGame:sendInputsAck(frame)
     NetworkManager:send(NetworkPackets.InputsAck(frame))
+end
+
+function NetworkGame:sendDisconnect()
+    NetworkManager:disconnect(self.remotePlayerId)
 end
 
 function NetworkGame:handleInputPacket(packet)
@@ -304,7 +325,7 @@ end
 
 function NetworkGame:keypressed(key, scancode, isrepeat)
     if key == "escape" then
-        -- @todo send disconnect to other player
+        self:sendDisconnect()
         replay.inputs = self.inputs -- replay is global
         replay.states = self.replay
     end
@@ -312,10 +333,15 @@ end
 
 function NetworkGame:draw()
     self.game:draw()
+    if self.disconnected then
+        love.graphics.print("Your opponent is disconnected", 300, 300)
+    end
     if Debug and Debug.showFps == 1 then
         love.graphics.print(""..tostring(love.timer.getFPS( )), 2, 2)
     end
-    self:drawDebugWidget()
+    if Debug and Debug.netcodeDebugWidget == 1 then
+        self:drawDebugWidget()
+    end
 end
 
 function NetworkGame:drawDebugWidget()
