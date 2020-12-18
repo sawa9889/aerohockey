@@ -4,15 +4,21 @@ local Vector = require "lib.hump.vector"
 local Game = {}
 
 function Game:init(inputSource)
+
+    self.background = AssetManager:getImage('playground')
+    self.width, self.height = self.background:getDimensions()
+    local windowWidth, windowHeight = love.graphics.getWidth(), love.graphics.getHeight()
+    self.scaleX, self.scaleY = windowWidth/self.width, windowHeight/self.height
+
     self.hc = HC.new()
 
     self.inputSource = inputSource
 
     self.ball_range = 15
     self.circle_range = 40
-    self.arena_start = {x = 100 - self.circle_range, y = 100 - self.circle_range}
-    self.arena_width = 600 + self.circle_range*2
-    self.arena_height = 300 + self.circle_range*2
+    self.arena_start = {x = 0, y = 16*self.scaleY}
+    self.arena_width = self.width*self.scaleX
+    self.arena_height = (self.height-16)*self.scaleY
 
     self.players = {}
     self.player1_start = {x = self.arena_start.x + self.arena_width/4   , y = self.arena_start.y + self.arena_height/2 }
@@ -34,7 +40,7 @@ function Game:init(inputSource)
     local upper_border_start = self.arena_start.y - border_width -- upper_border - self.circle_range - border_width
     local lower_border_end = self.arena_start.y + border_width + self.arena_height
 
-    local gate_height = self.circle_range*2 + self.ball_range*2
+    local gate_height = self.circle_range*2 + self.ball_range*4
     local gate_start = self.arena_start.y + self.arena_height/2 - gate_height/2
 
     local horizontal_walls_width = self.arena_width + border_width*2
@@ -82,6 +88,8 @@ function Game:init(inputSource)
             horizontal_walls_width,
             border_width)
     }
+    self.leftPlayerPoints = 0
+    self.rightPlayerPoints = 0
 end
 
 function Game:getState()
@@ -114,36 +122,50 @@ function Game:loadState(state)
 end
 
 function Game:draw()
-    love.graphics.setColor(0, 0, 1)
-    local shapes = self.hc:hash():shapes()
-    for _, shape in pairs(shapes) do
-        shape:draw()
-    end
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.rectangle(
-        'line',
-        self.arena_start.x,
-        self.arena_start.y,
-        self.arena_width/2,
-        self.arena_height
-    )
-    love.graphics.rectangle(
-        'line',
-        self.arena_start.x+self.arena_width/2,
-        self.arena_start.y,
-        self.arena_width/2,
-        self.arena_height
-    )
+    
+    love.graphics.draw(self.background, self.x, self.y, 0, self.scaleX, self.scaleY )
+
+    love.graphics.setColor( 1, 1, 1, 1 )
+    love.graphics.print(self.leftPlayerPoints, 65*self.scaleX, 2*self.scaleY)
+    love.graphics.print(self.rightPlayerPoints, 82*self.scaleX, 2*self.scaleY)
+    love.graphics.setColor( 0.75, 0, 0.15, 1 )
+    local ballPos, player1Pos, player2Pos = Vector(self.ball.shape:center()), Vector(self.players[1]:center()), Vector(self.players[2]:center())
+    love.graphics.circle('fill', player1Pos.x, player1Pos.y, self.circle_range )
+    love.graphics.circle('fill', player2Pos.x, player2Pos.y, self.circle_range )
+    love.graphics.setColor( 0, 0, 0, 1 )
+    love.graphics.circle('fill', ballPos.x, ballPos.y, self.ball_range )
+    love.graphics.setColor( 1, 1, 1, 1 )
+    -- love.graphics.setColor(0, 0, 1)
+    -- local shapes = self.hc:hash():shapes()
+    -- for _, shape in pairs(shapes) do
+    --     shape:draw()
+    -- end
+    -- love.graphics.setColor(1, 1, 1)
+    -- love.graphics.rectangle(
+    --     'line',
+    --     self.arena_start.x,
+    --     self.arena_start.y,
+    --     self.arena_width/2,
+    --     self.arena_height
+    -- )
+    -- love.graphics.rectangle(
+    --     'line',
+    --     self.arena_start.x+self.arena_width/2,
+    --     self.arena_start.y,
+    --     self.arena_width/2,
+    --     self.arena_height
+    -- )
+
 end
 
 function Game:getPlayerdx(target, playerNum)
     local playerPos = Vector(self.players[playerNum]:center())
     if playerNum == 1 then
-        target.x = math.clamp(self.arena_start.x + self.arena_width/2, target.x, self.arena_start.x)
+        target.x = math.clamp(self.arena_start.x - self.circle_range + self.arena_width/2, target.x, self.arena_start.x + self.circle_range )
     else
-        target.x = math.clamp(self.arena_start.x + self.arena_width/2, target.x, self.arena_start.x + self.arena_width)
+        target.x = math.clamp(self.arena_start.x + self.circle_range + self.arena_width/2, target.x, self.arena_start.x - self.circle_range + self.arena_width)
     end
-    target.y = math.clamp(self.arena_start.y + self.arena_height, target.y, self.arena_start.y)
+    target.y = math.clamp(self.arena_start.y - self.circle_range + self.arena_height, target.y, self.arena_start.y + self.circle_range)
     return target - playerPos
 end
 
@@ -191,11 +213,13 @@ function Game:advanceFrame()
     for shape, delta in pairs(self.hc:collisions(self.arena.left_gate)) do
         if shape.type == 'ball' then
             print('Left gate')
+            self.rightPlayerPoints = self.rightPlayerPoints + 1
         end
     end
     for shape, delta in pairs(self.hc:collisions(self.arena.right_gate)) do
         if shape.type == 'ball' then
             print('Right gate')
+            self.leftPlayerPoints = self.leftPlayerPoints + 1
         end
     end
 end

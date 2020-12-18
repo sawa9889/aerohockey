@@ -13,13 +13,13 @@ local Menu = {
 
 local MenuWindowManager
 function Menu:enter(prevState, game)
-    local scale = 2
+    local scale = 2.5
     love.graphics.setFont(love.graphics.newFont("resource/fonts/m3x6.ttf", 16*scale))
     local buttonHeight, buttonWidth = 25*scale, 100*scale
     local inputHeight, inputWidth = 25*scale, 100*scale
-    local buttonsGap, inputsGap = 50*scale, 10*scale
+    local buttonsGap, inputsGap = 25*scale, 10*scale
     local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
-    MenuWindowManager = WindowManager()
+    MenuWindowManager = WindowManager(nil,nil,nil,nil, AssetManager:getImage('menu_back'))
     MenuWindowManager:registerObject(InputBox(x, 
                                               y, 
                                               inputWidth, 

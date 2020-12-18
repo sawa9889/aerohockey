@@ -25,6 +25,9 @@ end
 
 -- Отображение объектов, с учётом релативной и фиксированной расположенности
 function WindowManager:draw()
+	local width, height = self.background:getDimensions()
+	love.graphics.draw(self.background, self.x, self.y, 0, self.width/width, self.height/height )
+	
 	for _, object in pairs(self.objects) do
 		if object.position == 'relative' then
 			local xPos =  (object.right and ((self.x + self.width) - object.right) or (object.left and (self.x + object.left) or self.x))
@@ -44,7 +47,6 @@ end
 -- Обработчик нажатия кнопки мыши на объекты
 function WindowManager:mousepressed(x, y)
 	for ind, object in pairs(self.objects) do
-        print(ind, object.x, object.width, object.y, object.height, object.tag)
 		if object:getCollision(x, y) then
 			if object.clickInteraction then 
 				object.clickInteraction(object)

@@ -11,8 +11,13 @@ Button = Class {
 }
 
 function Button:render()
-    love.graphics.rectangle("line", self.x, self.y, self.width, self.height )
+	local img = AssetManager:getImage('experimental_button')
+	local width, height = img:getDimensions()
+	love.graphics.draw(img, self.x, self.y, 0, self.width/width, self.height/height )
+    -- love.graphics.rectangle("line", self.x, self.y, self.width, self.height )
+    love.graphics.setColor( 0, 0, 0, 1 )
     love.graphics.print(self.tag,self.x+self.width/5, self.y+self.height/5)
+    love.graphics.setColor( 1, 1, 1, 1 )
 end
 
 function Button.defaultCallback(self)

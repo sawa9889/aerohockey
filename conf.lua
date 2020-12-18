@@ -12,6 +12,6 @@ config = {
 
 function love.conf(t)
     t.window.title = "Aerohockey"
-    t.window.width = 800
-    t.window.height = 600
+    t.window.width = 1366
+    t.window.height = 768
 end
