@@ -4,6 +4,7 @@
 -- networkManagerThread:start()
 require 'love.timer'
 require 'engine.debug'
+local log = require 'engine.logger' ("networkSocket", function(msg) return "[netsocket thread]: " .. msg end)
 
 local running = true
 
@@ -15,7 +16,7 @@ local socket = require("socket")
 local udp, isConnected, peer, listen
 
 local function reset()
-    print("SOCKET RESET!")
+    log(2, "SOCKET RESET")
     if udp then
         udp:close()
     end
@@ -29,22 +30,24 @@ end
 reset()
 
 local function sendPacket(packet, ip, port)
+    log(4, "Sending packet: <" .. packet .. "> to " .. ip .. ":" .. port )
     local result, msg
     if isConnected then
         result, msg = udp:send(packet)
     else
         result, msg = udp:sendto(packet, ip, port)
     end
-    if not result then vardump("send error ", result, msg, packet, ip, port) end
+    if not result then log(2, "Send error ", result, msg, packet, ip, port) end
 end
 
 local function awaitConnection(host, port)
     local result, msg = udp:setsockname(host, port)
-    if not result then vardump("set sock error ", result, msg, host, port) end
+    if not result then log(2, "Set sock error ", result, msg, host, port) end
     listen = true
 end
 
 local function connect(host, port)
+    log(4, "Connecting to ".. host .. ":" .. port )
     udp:setpeername(host, port)
     peer = {host = host, port = port}
     isConnected = true
@@ -53,7 +56,7 @@ end
 
 local function receivePackets()
     local packets = {}
-    local circuitBreaker = 100
+    local circuitBreaker = 10
     while circuitBreaker > 0 do
         local data, ipOrMsg, portOrNil
         if isConnected then
@@ -61,24 +64,27 @@ local function receivePackets()
         else
             data, ipOrMsg, portOrNil = udp:receivefrom()
         end
-        --vardump("receivePackets()", data, ipOrMsg, portOrNil)
         if not data then
             if ipOrMsg ~= "timeout" then
-                vardump("Network error: ", ipOrMsg)
+                log(2, "Network error: " .. ipOrMsg)
             end
             break
         end
+        
+        log(4, "Received packets:")
+        log(4, {data = data, ipOrMsg = ipOrMsg, portOrNil = portOrNil})
         if isConnected then
             ipOrMsg = peer.host
             portOrNil = peer.port
         end
         table.insert(packets, { packet = data, ip = ipOrMsg, port = portOrNil })
-        circuitBreaker = circuitBreaker + 1
+        circuitBreaker = circuitBreaker - 1
     end
     return packets
 end
 
 local function handleTask(task)
+    log(5, "Got task: " .. task.command )
     if task.command == "connect" then
         connect(task.host, task.port)
     elseif task.command == "awaitConnection" then

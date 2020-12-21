@@ -2,11 +2,13 @@ serpent = require "lib.debug.serpent"
 Debug = {
     showFps = 1,
     showStatesLoadSave = 0,
-    netcodeLog = 2,
+    netcodeLog = 1,
+    desyncDebugLog = 0,
     netcodeDebugWidget = 1,
     ballSpeedLog = 0,
     replayDebug = 0,
-    visualDesyncDebug = 0
+    visualDesyncDebug = 0,
+    networkSocket = 0
 }
 
 -- usage: vardump(x1, test, myVar) or vardump({ship = self, dt = dt})

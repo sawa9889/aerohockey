@@ -8,6 +8,8 @@ local NetworkPackets = require "netcode.network_packets"
 
 local netConfig = config.network
 
+local log = require 'engine.logger' ("netcodeLog")
+
 local NetworkManager = {}
 
 function NetworkManager:init()
@@ -47,6 +49,7 @@ end
 
 function NetworkManager:connectTo(ip, port)
     self:close()
+    log(4, "Connecting to " .. ip .. ":" .. port)
     self.remotePlayers["server"] = { ip = ip, port = port, state = "connecting" }
     self.role = "client"
     networkInput:push({
@@ -58,6 +61,7 @@ end
 
 function NetworkManager:startServer(port, maxRemotePlayers)
     self:close()
+    log(4, "Start to listen on " .. port)
     self.role = "server"
     if maxRemotePlayers then
         self.maxRemotePlayers = maxRemotePlayers
@@ -89,6 +93,7 @@ function NetworkManager:close()
     networkInput:push({
         command = "close"
     })
+    log(3, "Restarting Network Manager")
     self:init()
 end
 
@@ -110,6 +115,7 @@ function NetworkManager:getOrAddPlayer(ip, port)
         end
     end
     table.insert(self.remotePlayers, {ip = ip, port = port})
+    log(4, "Added new player " .. #self.remotePlayers .. ": " .. ip .. ":" .. port)
     return #self.remotePlayers
 end
 
@@ -123,6 +129,7 @@ function NetworkManager:handleDisconnectPackets()
         local player = self:getPlayer(packet.player)
         if player then
             player.state = "disconnected"
+            log(3, "Player " .. packet.player .. " has disconneted")
         end
     end
 end
@@ -131,7 +138,7 @@ function NetworkManager:update(dt)
     if self.role == "client" then
         local server = self.remotePlayers["server"]
         if server.state == "connecting" then
-            print("send hello")
+            log(4, "Sent hello to server")
             self:sendTo("server", NetworkPackets.Hello())
             server.state = "hello_sent"
         elseif server.state == "hello_sent" then
@@ -139,7 +146,7 @@ function NetworkManager:update(dt)
             for _, ack in ipairs(acks) do
                 -- @todo check ip port?
                 server.state = "connected"
-                print("Client connected to server!")
+                log(3, "Connected to server!")
             end
         end
     elseif self.role == "server" then
@@ -150,7 +157,7 @@ function NetworkManager:update(dt)
             -- if playersNum > maxRemotePlayers then send error and disconnect
             self:sendTo(playerId, NetworkPackets.HelloAck())
             player.state = "connected"
-            print("Player connected")
+            log(3, "Client connected")
         end
     end
     while networkOutput:peek() do
@@ -169,8 +176,8 @@ function NetworkManager:_saveReceived(data)
     local success, packetOrErr = pcall(function() return NetworkPackets.deserialize(data.packet) end)
 
     if not success or not packetOrErr then
-        print("Ignoring malformed packet!")
-        vardump(packetOrErr, data)
+        log(4, "Ignoring malformed packet!")
+        log(5, packetOrErr, data)
         return
     end
     local packet = packetOrErr

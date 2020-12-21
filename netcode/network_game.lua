@@ -8,16 +8,8 @@ local RingBuffer = require "netcode.ring_buffer"
 local NetworkManager = NetworkManager
 local NetworkPackets = require "netcode.network_packets"
 
-local function log(level, message)
-    if not Debug or Debug.netcodeLog < level then
-        return
-    end
-    if type(message) == "string" then
-        print(message)
-    else
-        vardump(message)
-    end
-end
+local log = require 'engine.logger' ("netcodeLog")
+local desyncLog = require 'engine.logger' ("desyncDebugLog")
 
 local stubInput = { [1] = Vector(0, 0), [2] = Vector(0, 0) }
 
@@ -26,7 +18,7 @@ local NetworkGame = {
     opponent = 2,
     disconnected = false,
     remotePlayerId = nil,
-    states = RingBuffer(maxRollback),
+    states = RingBuffer(maxRollback+1),
     isPaused = false,
     inputs = {},
     replay = {},
@@ -117,6 +109,7 @@ function NetworkGame:update(dt)
 
         log(3, "Advancing game. Frame: " .. self.displayFrame)
         self:advanceFrame()
+        desyncLog(1, self.game.ball.velocity)
     end
 end
 
@@ -225,16 +218,15 @@ function NetworkGame:handleRollback(newConfirmedFrame)
         self.confirmedFrame = newConfirmedFrame
         return
     end
+    log(3, "Loading state from " .. self.displayFrame .. "-" .. rollback .. " ago")
     while rollback > 0 do
         log(4, "Dropping 1 frame")
         self.states:pop()
         rollback = rollback - 1
     end
-    log(3, "Loading state")
+    log(4, "Loading state")
     self.game:loadState(self.states:peek())
-    if Debug and Debug.ballSpeedLog == 1 then
-        vardump(self.game.ball.velocity:len())
-    end
+    desyncLog(1, self.game.ball.velocity)
     -- advance frames untill we are at the present
     local newdisplayFrame = self.displayFrame
     self.displayFrame = self.confirmedFrame
@@ -243,6 +235,7 @@ function NetworkGame:handleRollback(newConfirmedFrame)
         log(4, "FF advancing game. Frame: " .. self.displayFrame)
         self:advanceFrame()
     end
+    desyncLog(1, self.game.ball.velocity)
     self.confirmedFrame = newConfirmedFrame
 end
 
@@ -301,8 +294,8 @@ end
 
 function NetworkGame:handleInputPacket(packet)
     if packet.player ~= self.remotePlayerId then
-        print("Ignoring packet from unknown player " .. packet.player)
-        vardump(packet.player,self.remotePlayerId)
+        log(4, "Ignoring packet from unknown player " .. packet.player)
+        log(5, packet.player,self.remotePlayerId)
         return
     end
     packet = packet.packet
@@ -312,7 +305,7 @@ function NetworkGame:handleInputPacket(packet)
     for _, input in ipairs(packet.inputs) do
         input = Vector(input.x, input.y) -- @fixme ?
         if frame < self.confirmedFrame then
-            log(2, "Received conflicting packet for frame "..frame.." but frame " .. self.confirmedFrame .. " is confirmed")
+            log(4, "Received conflicting packet for frame "..frame.." but frame " .. self.confirmedFrame .. " is confirmed")
         else
             self:addInputs(frame, self.opponent, input)
         end
