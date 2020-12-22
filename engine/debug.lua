@@ -1,10 +1,10 @@
 serpent = require "lib.debug.serpent"
 Debug = {
-    showFps = 1,
+    showFps = 0,
     showStatesLoadSave = 0,
-    netcodeLog = 1,
+    netcodeLog = 0,
     desyncDebugLog = 0,
-    netcodeDebugWidget = 1,
+    netcodeDebugWidget = 0,
     ballSpeedLog = 0,
     replayDebug = 0,
     visualDesyncDebug = 0,
