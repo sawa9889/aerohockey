@@ -338,6 +338,7 @@ function NetworkGame:draw()
 end
 
 function NetworkGame:drawDebugWidget()
+    love.graphics.setFont(fonts.smolPixelated)
     love.graphics.print(
         string.format(
             "display: %5d\nconfirm: %5d (%3d)\nremConf: %5d (%3d)\nsyncFrame: %5.2f\n",

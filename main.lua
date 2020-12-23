@@ -10,7 +10,10 @@ states = {
     replay = require "replay_game",
 }
 
-love.graphics.setFont(love.graphics.newFont("resource/fonts/m3x6.ttf", 16))
+fonts = {
+    smolPixelated = love.graphics.newFont("resource/fonts/m3x6.ttf", 16),
+    sevenSegment = love.graphics.newFont("resource/fonts/7_digit_font.ttf", 95)
+}
 
 replay = {}
 

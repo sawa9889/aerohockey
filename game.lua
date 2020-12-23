@@ -120,6 +120,10 @@ function Game:getState()
         ball = {
             position = Vector(self.ball.shape:center()),
             velocity = self.ball.velocity:clone()
+        },
+        score = {
+            [1] = self.leftPlayerPoints,
+            [2] = self.rightPlayerPoints
         }
     }
     if Debug and Debug.showStatesLoadSave == 1 then
@@ -138,6 +142,8 @@ function Game:loadState(state)
     self.players[2]:moveTo(state.players[2].x, state.players[2].y)
     self.ball.velocity = state.ball.velocity:clone()
     self.ball.shape:moveTo(state.ball.position.x, state.ball.position.y)
+    self.leftPlayerPoints = state.score[1]
+    self.rightPlayerPoints = state.score[2]
 end
 
 function Game:draw()
@@ -145,8 +151,7 @@ function Game:draw()
     love.graphics.draw(self.background, self.x, self.y, 0, self.scaleX, self.scaleY )
 
     love.graphics.setColor( 1, 1, 1, 1 )
-    local font_size = 11*self.scaleX
-    love.graphics.setFont(love.graphics.newFont("resource/fonts/7_digit_font.ttf", font_size))
+    love.graphics.setFont(fonts.sevenSegment)
     love.graphics.print(self.leftPlayerPoints, 65*self.scaleX, 2*self.scaleY, 0)
     love.graphics.print(self.rightPlayerPoints, 82*self.scaleX, 2*self.scaleY, 0)
     local ballPos, player1Pos, player2Pos = Vector(self.ball.shape:center()), Vector(self.players[1]:center()), Vector(self.players[2]:center())

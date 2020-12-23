@@ -13,7 +13,7 @@ local Menu = {
 
 local MenuWindowManager
 function Menu:enter(prevState, game)
-    local scale = 2.5
+    local scale = 3
     love.graphics.setFont(love.graphics.newFont("resource/fonts/m3x6.ttf", 16*scale))
     local buttonHeight, buttonWidth = 25*scale, 100*scale
     local inputHeight, inputWidth = 25*scale, 100*scale
