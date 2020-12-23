@@ -34,6 +34,8 @@ function Game:init(inputSource)
     self.ball.shape.type = 'ball'
     self.ball_max_speed = 8
     self.ball_friction = 0.991
+    self.game_start_timer = 0
+    self.game_start_time = 60 -- Время таймаута в секундах
 
     local border_width = 250
     local gate_hole = 40
@@ -108,8 +110,8 @@ function Game:getState()
         score = {
             [1] = self.leftPlayerPoints,
             [2] = self.rightPlayerPoints
-        }
-        -- TODO Добавить счёт
+        },
+        game_start_timer = self.game_start_timer,
     }
     if Debug and Debug.showStatesLoadSave == 1 then
         print("Serialized state")
@@ -129,6 +131,7 @@ function Game:loadState(state)
     self.ball.shape:moveTo(state.ball.position.x, state.ball.position.y)
     self.leftPlayerPoints = state.score[1]
     self.rightPlayerPoints = state.score[2]
+    self.game_start_timer = state.game_start_timer
 end
 
 function Game:draw()
@@ -195,41 +198,58 @@ function Game:roundBallVectors()
 end
 
 function Game:advanceFrame()
-    local iterations = 10
-    local inputs = self.inputSource()
-    local player_dPos = {}
-    player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
-    player_dPos[2] = self:getPlayerdx(Vector(inputs[2].x, inputs[2].y), 2) / iterations
 
-    local i = 1
-    while i <= iterations do
-        self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
-        self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
-        for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
-            self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
-        end
-        if self.ball.velocity:len() > self.ball_max_speed then
-            self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
-        end
-        self.ball.shape:move(self.ball.velocity.x, self.ball.velocity.y)
-        i = i + 1
-    end
-    self.ball.velocity = self.ball.velocity * self.ball_friction
-    self.ball_queue:push(Vector(self.ball.shape:center()))
-    self:roundBallVectors() -- @hack: it keeps to desync on some rounding errors
-    -- single different digit on 10^-12 gets bigger over time and causes desync
-    -- hopefully, it doesn't get big enough to get through rounding
+    if self.game_start_timer >= self.game_start_time then
+        local iterations = 10
+        local inputs = self.inputSource()
+        local player_dPos = {}
+        player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
+        player_dPos[2] = self:getPlayerdx(Vector(inputs[2].x, inputs[2].y), 2) / iterations
 
-    for shape, delta in pairs(self.hc:collisions(self.arena.left_gate)) do
-        if shape.type == 'ball' then
-            self.rightPlayerPoints = self.rightPlayerPoints + 1
+        local i = 1
+        while i <= iterations do
+            self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
+            self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
+            for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
+                self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
+            end
+            if self.ball.velocity:len() > self.ball_max_speed then
+                self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
+            end
+            self.ball.shape:move(self.ball.velocity.x, self.ball.velocity.y)
+            i = i + 1
         end
-    end
-    for shape, delta in pairs(self.hc:collisions(self.arena.right_gate)) do
-        if shape.type == 'ball' then
-            self.leftPlayerPoints = self.leftPlayerPoints + 1
+        self.ball.velocity = self.ball.velocity * self.ball_friction
+        self.ball_queue:push(Vector(self.ball.shape:center()))
+        self:roundBallVectors() -- @hack: it keeps to desync on some rounding errors
+        -- single different digit on 10^-12 gets bigger over time and causes desync
+        -- hopefully, it doesn't get big enough to get through rounding
+
+        for shape, delta in pairs(self.hc:collisions(self.arena.left_gate)) do
+            if shape.type == 'ball' then
+                self.rightPlayerPoints = self.rightPlayerPoints + 1
+                self:resetGameState()
+            end
         end
+        for shape, delta in pairs(self.hc:collisions(self.arena.right_gate)) do
+            if shape.type == 'ball' then
+                self.leftPlayerPoints = self.leftPlayerPoints + 1
+                self:resetGameState()
+            end
+        end
+    else
+        self.game_start_timer = self.game_start_timer + 1
     end
+end
+
+
+function Game:resetGameState()
+    self.players[1]:moveTo(self.player1_start.x, self.player1_start.y)
+    self.players[2]:moveTo(self.player2_start.x, self.player2_start.y)
+    self.ball.shape:moveTo(self.ball_start.x, self.ball_start.y)
+    self.ball.velocity = Vector(0, 0)
+    self.ball_queue.elements = {}
+    self.game_start_timer = 0
 end
 
 return Game
