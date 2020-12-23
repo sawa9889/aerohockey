@@ -137,7 +137,7 @@ function Game:draw()
 
     love.graphics.setColor( 1, 1, 1, 1 )
     love.graphics.setFont(fonts.sevenSegment)
-    love.graphics.print(self.leftPlayerPoints, 65*self.scaleX, 2*self.scaleY, 0)
+    love.graphics.print(self.leftPlayerPoints, 61*self.scaleX, 2*self.scaleY, 0)
     love.graphics.print(self.rightPlayerPoints, 82*self.scaleX, 2*self.scaleY, 0)
     local ballPos, player1Pos, player2Pos = Vector(self.ball.shape:center()), Vector(self.players[1]:center()), Vector(self.players[2]:center())
     local ballPos, player1Pos, player2Pos = Vector(self.ball.shape:center()), Vector(self.players[1]:center()), Vector(self.players[2]:center())
