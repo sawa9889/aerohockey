@@ -15,9 +15,12 @@ fonts = {
     sevenSegment = love.graphics.newFont("resource/fonts/7_digit_font.ttf", 115)
 }
 
+settings = require "engine.settings"
+
 replay = {}
 
 function love.load()
+    settings:load()
     AssetManager:load("resource")
     love.keyboard.setKeyRepeat(true)
     StateManager.switch(states.menu)

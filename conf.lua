@@ -14,4 +14,5 @@ function love.conf(t)
     t.window.title = "Aerohockey"
     t.window.width = 1366
     t.window.height = 768
+    t.identity = "aerohockey"
 end

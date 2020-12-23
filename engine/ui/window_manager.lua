@@ -13,8 +13,12 @@ WindowManager = Class {
     end
 }
 -- Регистрация объекта в окошке, для его отображения и считывания действий
-function WindowManager:registerObject(object)
-	table.insert(self.objects, object)
+function WindowManager:registerObject(id, object)
+	self.objects[id] = object
+end
+
+function WindowManager:getObject(id)
+	return self.objects[id]
 end
 
 function WindowManager:update(dt)
