@@ -173,10 +173,19 @@ end
 
 function Game:getPlayerdx(target, playerNum)
     local playerPos = Vector(self.players[playerNum]:center())
-    if playerNum == 1 then
-        target.x = math.clamp(self.arena_start.x - self.circle_range + self.arena_width/2, target.x, self.arena_start.x + self.circle_range )
+    if self.game_start_timer >= self.game_start_time then
+        if playerNum == 1 then
+            target.x = math.clamp(self.arena_start.x - self.circle_range + self.arena_width/2, target.x, self.arena_start.x + self.circle_range )
+        else
+            target.x = math.clamp(self.arena_start.x + self.circle_range + self.arena_width/2, target.x, self.arena_start.x - self.circle_range + self.arena_width)
+        end
     else
-        target.x = math.clamp(self.arena_start.x + self.circle_range + self.arena_width/2, target.x, self.arena_start.x - self.circle_range + self.arena_width)
+        if playerNum == 1 then
+            target.x = math.clamp(self.arena_start.x - self.circle_range + self.arena_width/3, target.x, self.arena_start.x + self.circle_range )
+        else
+            target.x = math.clamp(self.arena_start.x + self.circle_range + self.arena_width*2/3, target.x, self.arena_start.x - self.circle_range + self.arena_width)
+        end
+
     end
     target.y = math.clamp(self.arena_start.y - self.circle_range + self.arena_height, target.y, self.arena_start.y + self.circle_range)
     return target - playerPos
@@ -199,7 +208,6 @@ end
 
 function Game:advanceFrame()
 
-    if self.game_start_timer >= self.game_start_time then
         local iterations = 10
         local inputs = self.inputSource()
         local player_dPos = {}
@@ -210,15 +218,20 @@ function Game:advanceFrame()
         while i <= iterations do
             self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
             self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
-            for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
-                self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
-            end
-            if self.ball.velocity:len() > self.ball_max_speed then
-                self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
+            if self.game_start_timer >= self.game_start_time then
+                for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
+                    self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
+                end
+                if self.ball.velocity:len() > self.ball_max_speed then
+                    self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
+                end
             end
             self.ball.shape:move(self.ball.velocity.x, self.ball.velocity.y)
             i = i + 1
         end
+
+        self.game_start_timer = self.game_start_timer + 1
+
         self.ball.velocity = self.ball.velocity * self.ball_friction
         self.ball_queue:push(Vector(self.ball.shape:center()))
         self:roundBallVectors() -- @hack: it keeps to desync on some rounding errors
@@ -237,9 +250,6 @@ function Game:advanceFrame()
                 self:resetGameState()
             end
         end
-    else
-        self.game_start_timer = self.game_start_timer + 1
-    end
 end
 
 
