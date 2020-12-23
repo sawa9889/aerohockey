@@ -1,25 +1,8 @@
 local HC = require "lib.hardoncollider"
 local Vector = require "lib.hump.vector"
+local RingBuffer = require "netcode.ring_buffer"
 
 local Game = {}
-
-local ball_queue = {
-    length = 10,
-    queue_arr = {},
-    put = function (self, val)
-        if #self.queue_arr >= self.length then
-            for ind, val in pairs(self.queue_arr) do
-                self.queue_arr[ind] = self.queue_arr[ind+1]
-            end
-            self.queue_arr[self.length+1] = val
-        else 
-            table.insert(self.queue_arr, val)
-        end
-    end,
-    get = function ()
-        local result = queue_arr[1]
-    end
-}
 
 function Game:init(inputSource)
 
@@ -27,17 +10,18 @@ function Game:init(inputSource)
     self.width, self.height = self.background:getDimensions()
     local windowWidth, windowHeight = love.graphics.getWidth(), love.graphics.getHeight()
     self.scaleX, self.scaleY = windowWidth/self.width, windowHeight/self.height
+    self.ball_queue = RingBuffer(10)
 
     self.hc = HC.new()
 
     self.inputSource = inputSource
 
     self.ball_range = 30
-    self.ball_queue = ball_queue
     self.circle_range = 40
-    self.arena_start = {x = 0, y = 16*self.scaleY}
+    local scoreBoardHeight = 16
+    self.arena_start = {x = 0, y = scoreBoardHeight*self.scaleY}
     self.arena_width = self.width*self.scaleX
-    self.arena_height = (self.height-16)*self.scaleY
+    self.arena_height = (self.height-scoreBoardHeight)*self.scaleY
 
     self.players = {}
     self.player1_start = {x = self.arena_start.x + self.arena_width/4   , y = self.arena_start.y + self.arena_height/2 }
@@ -125,6 +109,7 @@ function Game:getState()
             [1] = self.leftPlayerPoints,
             [2] = self.rightPlayerPoints
         }
+        -- TODO Добавить счёт
     }
     if Debug and Debug.showStatesLoadSave == 1 then
         print("Serialized state")
@@ -164,15 +149,20 @@ function Game:draw()
     img = AssetManager:getImage('bat_2')
     love.graphics.draw(img, player2Pos.x, player2Pos.y, 0, circle_index, circle_index, (width/4)*circle_index, (height/4)*circle_index  )
 
-    -- Draw ball
     img = AssetManager:getImage('ball')
     width, height = img:getDimensions()
-    ball_index = self.ball_range/(width/2)
-    love.graphics.draw(img, ballPos.x, ballPos.y, 0, ball_index, ball_index, (width/4)*ball_index, (height/4)*ball_index  )
+    ball_scale = self.ball_range/(width/2)
 
-    for ind, vector in pairs(self.ball_queue.queue_arr) do
-        love.graphics.draw(img, vector.x, vector.y, 0, ball_index*(ind * 0.1), ball_index*(ind * 0.1), (width/4)*ball_index, (height/4)*ball_index )
+    for ind = 1, self.ball_queue.size, 1 do
+        -- print(ind, self.ball_queue:get(ind))
+        local index_scale = 1 - ind * 0.1
+        if self.ball_queue:get(ind) then
+            love.graphics.draw(img, self.ball_queue:get(ind).x, self.ball_queue:get(ind).y, 0, ball_scale*index_scale, ball_scale*index_scale, (width/4)*ball_scale, (height/4)*ball_scale )
+        end
     end
+
+    -- Draw ball
+    love.graphics.draw(img, ballPos.x, ballPos.y, 0, ball_scale, ball_scale, (width/4)*ball_scale, (height/4)*ball_scale  )
 
     love.graphics.setColor( 1, 1, 1, 1 )
 
@@ -225,7 +215,7 @@ function Game:advanceFrame()
         i = i + 1
     end
     self.ball.velocity = self.ball.velocity * self.ball_friction
-    self.ball_queue:put(Vector(self.ball.shape:center()))
+    self.ball_queue:push(Vector(self.ball.shape:center()))
     self:roundBallVectors() -- @hack: it keeps to desync on some rounding errors
     -- single different digit on 10^-12 gets bigger over time and causes desync
     -- hopefully, it doesn't get big enough to get through rounding
