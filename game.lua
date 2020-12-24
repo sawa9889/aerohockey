@@ -36,6 +36,7 @@ function Game:init(inputSource)
     self.ball_friction = 0.991
     self.game_start_timer = 0
     self.game_start_time = 60 -- Время таймаута в секундах
+    self.goal_score = 10
 
     local border_width = 250
     local gate_hole = 40
@@ -266,8 +267,15 @@ function Game:resetGameState()
     self.ball.shape:moveTo(self.ball_start.x, self.ball_start.y)
     self.ball.velocity = Vector(0, 0)
     self.ball_queue.elements = {}
-    self.game_start_timer = 0
-    self.message = 'Score'
+    if self.rightPlayerPoints == self.goal_score or self.leftPlayerPoints == self.goal_score then 
+        self.message = self.rightPlayerPoints > self.leftPlayerPoints and 'Right player wins' or 'Left player wins'
+        self.game_start_timer = -45
+        self.rightPlayerPoints = 0
+        self.leftPlayerPoints = 0
+    else
+        self.game_start_timer = 0
+        self.message = 'Score'
+    end
 end
 
 return Game
