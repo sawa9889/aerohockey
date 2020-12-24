@@ -138,7 +138,6 @@ function Game:draw()
     
     love.graphics.draw(self.background, self.x, self.y, 0, self.scaleX, self.scaleY )
 
-    love.graphics.setColor( 1, 1, 1, 1 )
     love.graphics.setFont(fonts.sevenSegment)
     love.graphics.print(self.leftPlayerPoints, 61*self.scaleX, 2*self.scaleY, 0)
     love.graphics.print(self.rightPlayerPoints, 82*self.scaleX, 2*self.scaleY, 0)
@@ -167,7 +166,13 @@ function Game:draw()
     -- Draw ball
     love.graphics.draw(img, ballPos.x, ballPos.y, 0, ball_scale, ball_scale, (width/4)*ball_scale, (height/4)*ball_scale  )
 
-    love.graphics.setColor( 1, 1, 1, 1 )
+
+    if self.message then
+        love.graphics.setColor( 1, 0.3, 0, 1 )
+        -- local symbolsInRow = math.ceil((love.graphics.getWidth()/3)/fonts.sevenSegment.width)
+        love.graphics.printf( self.message, love.graphics.getWidth()/3 , love.graphics.getHeight()/3, love.graphics.getWidth()/3, 'center')
+        love.graphics.setColor( 1, 1, 1, 1 )
+    end
 
 end
 
@@ -207,49 +212,51 @@ function Game:roundBallVectors()
 end
 
 function Game:advanceFrame()
+    local iterations = 10
+    local inputs = self.inputSource()
+    local player_dPos = {}
+    player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
+    player_dPos[2] = self:getPlayerdx(Vector(inputs[2].x, inputs[2].y), 2) / iterations
 
-        local iterations = 10
-        local inputs = self.inputSource()
-        local player_dPos = {}
-        player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
-        player_dPos[2] = self:getPlayerdx(Vector(inputs[2].x, inputs[2].y), 2) / iterations
-
-        local i = 1
-        while i <= iterations do
-            self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
-            self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
-            if self.game_start_timer >= self.game_start_time then
-                for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
-                    self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
-                end
-                if self.ball.velocity:len() > self.ball_max_speed then
-                    self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
-                end
+    local i = 1
+    while i <= iterations do
+        self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
+        self.players[2]:move(player_dPos[2].x, player_dPos[2].y)
+        if self.game_start_timer >= self.game_start_time then
+            for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
+                self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
             end
-            self.ball.shape:move(self.ball.velocity.x, self.ball.velocity.y)
-            i = i + 1
-        end
-
-        self.game_start_timer = self.game_start_timer + 1
-
-        self.ball.velocity = self.ball.velocity * self.ball_friction
-        self.ball_queue:push(Vector(self.ball.shape:center()))
-        self:roundBallVectors() -- @hack: it keeps to desync on some rounding errors
-        -- single different digit on 10^-12 gets bigger over time and causes desync
-        -- hopefully, it doesn't get big enough to get through rounding
-
-        for shape, delta in pairs(self.hc:collisions(self.arena.left_gate)) do
-            if shape.type == 'ball' then
-                self.rightPlayerPoints = self.rightPlayerPoints + 1
-                self:resetGameState()
+            if self.ball.velocity:len() > self.ball_max_speed then
+                self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
+            end
+            if self.message then
+                self.message = nil
             end
         end
-        for shape, delta in pairs(self.hc:collisions(self.arena.right_gate)) do
-            if shape.type == 'ball' then
-                self.leftPlayerPoints = self.leftPlayerPoints + 1
-                self:resetGameState()
-            end
+        self.ball.shape:move(self.ball.velocity.x, self.ball.velocity.y)
+        i = i + 1
+    end
+
+    self.game_start_timer = self.game_start_timer + 1
+
+    self.ball.velocity = self.ball.velocity * self.ball_friction
+    self.ball_queue:push(Vector(self.ball.shape:center()))
+    self:roundBallVectors() -- @hack: it keeps to desync on some rounding errors
+    -- single different digit on 10^-12 gets bigger over time and causes desync
+    -- hopefully, it doesn't get big enough to get through rounding
+
+    for shape, delta in pairs(self.hc:collisions(self.arena.left_gate)) do
+        if shape.type == 'ball' then
+            self.rightPlayerPoints = self.rightPlayerPoints + 1
+            self:resetGameState()
         end
+    end
+    for shape, delta in pairs(self.hc:collisions(self.arena.right_gate)) do
+        if shape.type == 'ball' then
+            self.leftPlayerPoints = self.leftPlayerPoints + 1
+            self:resetGameState()
+        end
+    end
 end
 
 
@@ -260,6 +267,7 @@ function Game:resetGameState()
     self.ball.velocity = Vector(0, 0)
     self.ball_queue.elements = {}
     self.game_start_timer = 0
+    self.message = 'Score'
 end
 
 return Game
