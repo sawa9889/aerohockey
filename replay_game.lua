@@ -1,7 +1,8 @@
 local ReplayGame = {
     isPaused = true,
     inputs = {},
-    frame = 1
+    frame = 1,
+    ffSpeed = 25
 }
 
 function ReplayGame:enter(prevState, game, inputs, replayStates)
@@ -19,6 +20,13 @@ end
 
 function ReplayGame:update(dt)
     if not self.isPaused then
+        if love.keyboard.isDown(config.controls.replayFF) then
+            local i = self.ffSpeed
+            while i > 0 do
+                self:advanceFrame()
+                i = i - 1
+            end
+        end
         self:advanceFrame()
     end
 end
@@ -50,16 +58,20 @@ function ReplayGame:getGameInputs()
 end
 
 function ReplayGame:keypressed(key, scancode, isrepeat)
-    if key == "space" and not isrepeat then
+    if key == config.controls.replayPause and not isrepeat then
         self.isPaused = not self.isPaused
     end
-    if key == "d" and not isrepeat and self.isPaused then
+    if key == config.controls.replayAdvanceFrame and not isrepeat and self.isPaused then
         self:advanceFrame()
+    end
+    if key == config.controls.replaySave and not isrepeat then
+        self:saveReplay()
     end
 end
 
 function ReplayGame:draw()
     self.game:draw()
+    love.graphics.setFont(fonts.smolPixelated)
     if Debug and Debug.showFps == 1 then
         love.graphics.print(""..tostring(love.timer.getFPS( )), 2, 2)
     end
@@ -70,6 +82,27 @@ function ReplayGame:draw()
     love.graphics.setColor(1,0,0)
     if Debug and Debug.replayDebug == 1 and self.replay[self.frame] then
         love.graphics.circle("line", self.replay[self.frame].ball.position.x, self.replay[self.frame].ball.position.y, 15)
+    end
+end
+
+function ReplayGame:saveReplay()
+    local datetime = os.date("%Y.%m.%d-%H.%M.%S")
+    local replay = {
+        meta = {
+            version = config.replay.version,
+            date = datetime
+        },
+        inputs = self.inputs
+    }
+    if not love.filesystem.getInfo("replays", "directory") then
+        love.filesystem.createDirectory("replays")
+    end
+    replayBinary = love.data.compress("data", "lz4", serpent.line(replay, {comment = false}))
+    local success, message = love.filesystem.write("replays/" .. datetime .. ".rep", replayBinary)
+    if success then
+        print("Replay saved!")
+    else
+        print("Error saving replay: " .. message)
     end
 end
 

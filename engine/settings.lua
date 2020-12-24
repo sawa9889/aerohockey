@@ -1,7 +1,7 @@
 local serpent = require "lib.debug.serpent" 
 
 settings = {
-    values = {
+    values = { -- default values are overwritten by file
         ip = "127.0.0.1",
         port = "12345"
     }
@@ -32,6 +32,8 @@ function settings:load()
                     self.values[k] = settingsFile[k]
                 end
             end
+        else
+            self:save()
         end
     else
         self:save()

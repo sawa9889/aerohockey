@@ -7,6 +7,15 @@ config = {
         syncSmoothing = 1,
         maxRemotePlayers = 1,
         connectInGame = false,
+    },
+    controls = {
+        replayFF = "w",
+        replayAdvanceFrame = "d",
+        replayPause = "space",
+        replaySave = "s"
+    },
+    replay = {
+        version = "1"
     }
 }
 
