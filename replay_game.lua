@@ -97,13 +97,34 @@ function ReplayGame:saveReplay()
     if not love.filesystem.getInfo("replays", "directory") then
         love.filesystem.createDirectory("replays")
     end
-    replayBinary = love.data.compress("data", "lz4", serpent.line(replay, {comment = false}))
+    replayBinary = love.data.compress("data", "lz4", serpent.line(replay, {metatostring = false, comment = false}))
     local success, message = love.filesystem.write("replays/" .. datetime .. ".rep", replayBinary)
     if success then
-        print("Replay saved!")
+        print("Replay saved to %appdate%/replays/" .. datetime .. ".rep")
     else
         print("Error saving replay: " .. message)
     end
+end
+
+local function isValidReplay(replay)
+    return replay and replay.meta and replay.meta.version == config.replay.version and replay.inputs
+end
+
+function love.filedropped(file)
+    ok, err = file:open("r")
+    if not ok then
+        print("Error reading dropped file")
+        return
+    end
+	print("Reading dropped file " .. file:getFilename())
+    local data = file:read("data")
+    data = love.data.decompress("string", "lz4", data)
+    local okDeserialize, replay = serpent.load(data)
+    if not data or not okDeserialize or not replay or not isValidReplay(replay) then
+        print("Error decoding replay")
+        return
+    end
+    StateManager.switch(states.replay, require "game", replay.inputs)
 end
 
 return ReplayGame

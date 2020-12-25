@@ -11,7 +11,7 @@ local NetworkPackets = require "netcode.network_packets"
 local log = require 'engine.logger' ("netcodeLog")
 local desyncLog = require 'engine.logger' ("desyncDebugLog")
 
-local stubInput = { [1] = Vector(0, 0), [2] = Vector(0, 0) }
+local getStubInput = function () return { [1] = Vector(0, 0), [2] = Vector(0, 0) } end
 
 local NetworkGame = {
     player = 1,
@@ -54,7 +54,7 @@ function NetworkGame:enter(prevState, game, localPlayer)
     self.replay = {}
     local i = 1
     while i <= self.delay do
-        self.inputs[i] = stubInput
+        self.inputs[i] = getStubInput()
         i = i + 1
     end
     self.game = game
