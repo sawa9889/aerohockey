@@ -2,7 +2,7 @@ Class = require "lib.hump.class"
 -- Абстрактный класс любого атомарного объекта для UI, сожержит зародыши умений объектов, такие как DragAndDrop и Кликабельность, также позиционирование
 -- 
 UIobject = Class {
-    init = function(self, x, y,width,height, tag)
+    init = function(self, x, y, width, height, tag, position)
         self.x = x
         self.y = y
         self.width = width and width or 0
@@ -17,7 +17,7 @@ UIobject = Class {
         -- Позиционирование, неоходимо для отображения в WM, Если fixed значит как указаны X и Y так и будет по тем координатам на экране расположен объект
         -- если relative, то X и Y берутся как указания "как относительно другого объекта расположен этот"
         -- положительное значение - справа, ниже, отрицательные - слева, выше
-        self.position = 'fixed'
+        self.position = position and position or 'fixed'
     end
 }
 -- Всем объектам надо уметь понимать случилась ли коллизия, причем не важно с мышкой или чем-то ещё
@@ -29,6 +29,9 @@ function UIobject:getCollision(x, y)
 end
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
 function UIobject:render()
+end
+
+function UIobject:drawObject(x, y, angle, width, height)
 end
 
 function UIobject:draw()

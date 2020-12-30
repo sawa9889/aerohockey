@@ -2,6 +2,7 @@
 
 NetworkManager = require "netcode.network_manager" -- yeah, global
 WindowManager  = require "engine.ui.window_manager"
+MainMenuContainer = require "main_menu"
 Button         = require "engine.ui.button"
 InputBox       = require "engine.ui.input_box"
 
@@ -10,7 +11,6 @@ local aerohockeyGame = require "game"
 local Menu = {
     localPlayer = 1,
 }
-
 local MenuWindowManager
 function Menu:enter(prevState, game)
     local scale = 3
@@ -19,42 +19,8 @@ function Menu:enter(prevState, game)
     local inputHeight, inputWidth = 25*scale, 100*scale
     local buttonsGap, inputsGap = 25*scale, 10*scale
     local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
-    MenuWindowManager = WindowManager(nil,nil,nil,nil, AssetManager:getImage('menu_back'))
-    MenuWindowManager:registerObject("port_input", InputBox(
-        x, y, 
-        inputWidth, inputHeight, 
-        nil, nil,
-        'Port', settings:get("port")))
-    MenuWindowManager:registerObject("ip_input", InputBox(
-        x, y + inputHeight + inputsGap, 
-        inputWidth, inputHeight, 
-        nil, nil,
-        'Address', settings:get("ip")))
-    MenuWindowManager:registerObject("start_server_btn", Button(
-        x + inputWidth + buttonsGap, y, 
-        buttonWidth, buttonHeight, 
-        function() 
-            NetworkManager:startServer(MenuWindowManager:getObject("port_input"):getText(), 1)
-            self.localPlayer = 1
-        end, 
-        'Start server'))
-    MenuWindowManager:registerObject("connect_btn", Button(
-        x + inputWidth + buttonsGap, y + (buttonHeight + inputsGap), 
-        buttonWidth, buttonHeight, 
-        function() 
-              NetworkManager:connectTo(MenuWindowManager:getObject("ip_input"):getText(), MenuWindowManager:getObject("port_input"):getText())
-              self.localPlayer = 2
-        end, 
-        'Start connect'))
-    MenuWindowManager:registerObject("replay_btn", Button(
-        x, y + (buttonHeight + inputsGap)*2, 
-        buttonWidth, buttonHeight, 
-        function() 
-            if replay.inputs then
-                StateManager.switch(states.replay, require "game", replay.inputs, replay.states)
-            end
-        end, 
-        'Show replay'))
+    MenuWindowManager = WindowManager()
+    MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
 end
 
 function Menu:update(dt)
@@ -82,6 +48,9 @@ end
 
 
 function Menu:draw()
+    love.graphics.setColor( 0.25, 0.35, 1, 1 )
+    love.graphics.rectangle( 'fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight() )
+    love.graphics.setColor( 1, 1, 1, 1 )
     MenuWindowManager:draw()
 end
 

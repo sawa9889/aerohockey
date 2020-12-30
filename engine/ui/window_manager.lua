@@ -29,19 +29,20 @@ end
 
 -- Отображение объектов, с учётом релативной и фиксированной расположенности
 function WindowManager:draw()
-	local width, height = self.background:getDimensions()
-	love.graphics.draw(self.background, self.x, self.y, 0, self.width/width, self.height/height )
-	
+	if self.background then
+		local width, height = self.background:getDimensions()
+		love.graphics.draw(self.background, self.x, self.y, 0, self.width/width, self.height/height )
+	end
+
 	for _, object in pairs(self.objects) do
 		if object.position == 'relative' then
-			local xPos =  (object.right and ((self.x + self.width) - object.right) or (object.left and (self.x + object.left) or self.x))
-			local yPos =  (object.down and ((self.y + self.height) - object.down) or (object.up and (self.y + object.up) or self.y))
-			drawObject( object, 
-			 			xPos, 
-			 			yPos, 
-			 			object.angle, 
-			 			object.width, 
-			 			object.heigth)
+			local xPos =  (object.right and ((self.x + self.width) - object.right) or (object.left and (self.x + object.left) or self.x + object.x))
+			local yPos =  (object.down and ((self.y + self.height) - object.down) or (object.up and (self.y + object.up) or self.y  + object.y))
+			object:drawObject( xPos, 
+					 		   yPos, 
+					 		   object.angle, 
+					 		   object.width, 
+					 		   object.height)
 		elseif object.position == 'fixed' then
 			object:draw()
 		end
@@ -53,13 +54,13 @@ function WindowManager:mousepressed(x, y)
 	for ind, object in pairs(self.objects) do
 		if object:getCollision(x, y) then
 			if object.clickInteraction then 
-				object.clickInteraction(object)
+				object.clickInteraction(object, x, y)
 			end
 			if object.startHoldInteraction then 
-				object.startHoldInteraction(object)
+				object.startHoldInteraction(object, x, y)
 			end
 		elseif object.unclickInteraction then
-			object.unclickInteraction(object)
+			object.unclickInteraction(object, x, y)
 		end
 	end
 end
@@ -67,8 +68,8 @@ end
 -- Обработчик отпускания кнопки мыши
 function WindowManager:keypressed(key)
 	for ind, object in pairs(self.objects) do
-		if object.keypress then
-			object.keypress(key, object)
+		if object.keypressed then
+			object.keypressed(object, key)
 		end
 	end
 end
