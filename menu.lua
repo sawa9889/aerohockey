@@ -30,13 +30,13 @@ function Menu:update(dt)
     MenuWindowManager:update(dt)
     if NetworkManager:connectedPlayersNum() == 1 then
         self:updateSettings()
-        StateManager.switch(states.netgame, aerohockeyGame, self.localPlayer)
+        StateManager.switch(states.netgame, aerohockeyGame, MenuWindowManager:getObject("Main_Menu").localPlayer)
     end
 end
 
 function Menu:updateSettings()
-    settings:set("ip", MenuWindowManager:getObject("ip_input"):getText())
-    settings:set("port", MenuWindowManager:getObject("port_input"):getText())
+    settings:set("ip", MenuWindowManager:getObject("Main_Menu").windowManager:getObject("ip_input"):getText())
+    settings:set("port", MenuWindowManager:getObject("Main_Menu").windowManager:getObject("port_input"):getText())
     settings:save()
 end
 

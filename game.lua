@@ -3,7 +3,6 @@ local Vector = require "lib.hump.vector"
 local RingBuffer = require "netcode.ring_buffer"
 
 local Game = {}
-local canvas = love.graphics.newCanvas()
 
 function Game:init(inputSource)
 
@@ -137,11 +136,6 @@ function Game:loadState(state)
 end
 
 function Game:draw()
-    
-    canvas:renderTo(function()
-        love.graphics.setColor(love.math.random(), 0, 0);
-        love.graphics.line(0, 0, love.math.random(0, love.graphics.getWidth()), love.math.random(0, love.graphics.getHeight()));
-    end);
     
     love.graphics.draw(self.background, self.x, self.y, 0, self.scaleX, self.scaleY )
 
