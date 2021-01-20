@@ -7,8 +7,8 @@ InputBox = Class {
 	__includes = UIobject,
 	init = function(self, x, y, width, height, click, unclick, tag, defaultText, position)
 		UIobject.init(self, x, y, width and width or 100, height and height or 50, tag, position)
-		self.clickInteraction = click and click or self.defaultClick
-		self.unclickInteraction = unclick and unclick or self.defaultUnclick
+		self.startClickInteraction = click and click or self.defaultClick
+		self.misClickInteraction = unclick and unclick or self.defaultUnclick
 		self.text = defaultText or ''
 	end
 }
@@ -36,6 +36,7 @@ end
 function InputBox.defaultClick(self)
 	if not self.focused then
 		self.focused = true
+		print('Focused')
 	end
 end
 
@@ -49,7 +50,7 @@ function InputBox:getText()
 	return self.text
 end
 
-function InputBox:keypressed(self, key)
+function InputBox:keypressed( key)
 	if self.focused then
 		if self.serviceButtonPressed and (self.serviceButton == 'lctrl' or self.serviceButton == 'rctrl') and key == 'backspace' then
 			self.text = ''

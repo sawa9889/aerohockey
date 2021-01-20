@@ -6,7 +6,7 @@ Button = Class {
     __includes = UIobject,
     init = function(self, x, y, width, height, callback, tag, position)
         UIobject.init(self, x, y, width and width or 100, height and height or 50, tag, position)
-        self.clickInteraction = callback
+        self.startClickInteraction = callback
     end
 }
 

@@ -3,6 +3,7 @@
 NetworkManager = require "netcode.network_manager" -- yeah, global
 WindowManager  = require "engine.ui.window_manager"
 MainMenuContainer = require "main_menu"
+LoadFileContainer = require "load_file"
 Button         = require "engine.ui.button"
 InputBox       = require "engine.ui.input_box"
 
@@ -21,6 +22,7 @@ function Menu:enter(prevState, game)
     local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
     MenuWindowManager = WindowManager()
     MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
+    -- MenuWindowManager:registerObject("Main_Menu", LoadFileContainer(MenuWindowManager))
 end
 
 function Menu:update(dt)

@@ -125,7 +125,6 @@ end
 
 function Game:loadState(state)
     if Debug and Debug.showStatesLoadSave == 1 then
-        print("Loaded state")
         vardump(state)
     end
     self.players[1]:moveTo(state.players[1].x, state.players[1].y)

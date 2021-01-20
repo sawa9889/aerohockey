@@ -27,7 +27,7 @@ MainMenuContainer = Class {
 	        rightColumnX, firstLineY, 
 	        buttonWidth, buttonHeight, 
 	        function() 
-	            NetworkManager:startServer(self:getObject("port_input"):getText(), 1)
+	            NetworkManager:startServer(self.windowManager:getObject("port_input"):getText(), 1)
 	            self.localPlayer = 1
 	        end, 
 	        'Start server', 'relative'))
@@ -35,7 +35,7 @@ MainMenuContainer = Class {
 	        rightColumnX, secondLineY, 
 	        buttonWidth, buttonHeight, 
 	        function() 
-	              NetworkManager:connectTo(self:getObject("ip_input"):getText(), self:getObject("port_input"):getText())
+	              NetworkManager:connectTo(self.windowManager:getObject("ip_input"):getText(), self.windowManager:getObject("port_input"):getText())
 	              self.localPlayer = 2
 	        end, 
 	        'Start connect', 'relative'))
@@ -55,7 +55,8 @@ function MainMenuContainer:keypressed(t)
     self.windowManager:keypressed(t)
 end
 
-function MainMenuContainer:mousepressed(x, y)
+function MainMenuContainer:startClickInteraction(x, y)
+	print(x,y, self.x, self.y)
     self.windowManager:mousepressed(x, y)
 end
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
@@ -69,6 +70,7 @@ function MainMenuContainer:render()
 end
 
 function MainMenuContainer:update(dt)
+    self.windowManager:update(dt)
 end
 
 return MainMenuContainer
