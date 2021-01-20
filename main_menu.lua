@@ -33,36 +33,53 @@ MainMenuContainer = Class {
 	        rightColumnX, firstLineY, 
 	        buttonWidth, buttonHeight, 
 	        {
-	        	callback = function() 
-					           NetworkManager:startServer(self.windowManager:getObject("port_input"):getText(), 1)
-					           self.localPlayer = 1
-					       end,
+	        	callback = function() self:startServer() end,
 	        	tag = 'Start server',
 	        	position = 'relative',
 	        }))
 	    self.windowManager:registerObject("connect_btn", Button(
-	        rightColumnX, secondLineY, 
-	        buttonWidth, buttonHeight, 
+	        rightColumnX, secondLineY,
+	        buttonWidth, buttonHeight,
 	        {
-	        	callback = function() 
-				                 NetworkManager:connectTo(self.windowManager:getObject("ip_input"):getText(), self.windowManager:getObject("port_input"):getText())
-				                 self.localPlayer = 2
-				           end,
+	        	callback = function() self:connectToGame() end,
 	        	tag = 'Start connect',
 	        	position = 'relative',
 	        }))
 	    self.windowManager:registerObject("replay_btn", Button(
-	        rightColumnX, thirdLineY, 
-	        buttonWidth, buttonHeight, 
+	        rightColumnX, thirdLineY,
+	        buttonWidth, buttonHeight,
 	        {
-	        	callback =  function() 
-					        	self.parent.activePage = "Load_Menu"
-					        end,
+				callback = function()
+					self.parent.activePage = "Load_Menu"
+				end,
 	        	tag = 'Show replay',
 	        	position = 'relative',
 	        }))
     end
 }
+
+function MainMenuContainer:startServer()
+    StateManager.switch(states.connectingState, {
+        isServer = true,
+        port = self:getPortInput()
+    })
+end
+
+function MainMenuContainer:connectToGame()
+    StateManager.switch(states.connectingState, {
+        isServer = false,
+        ip = self:getIpInput(),
+        port = self:getPortInput()
+    })
+end
+
+function MainMenuContainer:getIpInput()
+    return self.windowManager:getObject("ip_input"):getText()
+end
+
+function MainMenuContainer:getPortInput()
+    return self.windowManager:getObject("port_input"):getText()
+end
 
 function MainMenuContainer:keypressed(t)
     self.windowManager:keypressed(t)
@@ -83,7 +100,11 @@ function MainMenuContainer:render()
 end
 
 function MainMenuContainer:update(dt)
-    self.windowManager:update(dt)
+	self.windowManager:update(dt)
+	if NetworkManager:connectedPlayersNum() == 1 then
+        self:updateSettings()
+        StateManager.switch(states.netgame, aerohockeyGame, MenuWindowManager:getObject("Main_Menu").localPlayer)
+    end
 end
 
 return MainMenuContainer

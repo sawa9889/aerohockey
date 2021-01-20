@@ -1,12 +1,15 @@
 config = {
     network = {
         packetMagic = "AERO",
-        protocolVersion = "2",
+        protocolVersion = "3",
         maxRollback = 10,
         delay = 3,
+        maxInputsPerPacket = 50,
         syncSmoothing = 1,
-        maxRemotePlayers = 1,
+        maxRemotePlayers = 8,
         connectInGame = false,
+        spectatorFFSpeed = 25,
+        spectatorSmoothSpeed = true
     },
     controls = {
         replayFF = "w",
