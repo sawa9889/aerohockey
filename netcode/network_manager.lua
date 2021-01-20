@@ -19,6 +19,7 @@ function NetworkManager:init()
     self.remotePlayers = {} -- { [1] = {ip = 10.10.0.1, port = 12345, state = "connected"}, [2] = { ... }}
     self.maxRemotePlayers = netConfig.maxRemotePlayers
     self.connectInGame = netConfig.connectInGame
+    self.onPlayerConnectedSubscribers = {}
 end
 
 NetworkManager:init()
@@ -117,6 +118,10 @@ function NetworkManager:getOrAddPlayer(ip, port)
     table.insert(self.remotePlayers, {ip = ip, port = port})
     log(4, "Added new player " .. #self.remotePlayers .. ": " .. ip .. ":" .. port)
     return #self.remotePlayers
+end
+
+function NetworkManager:getRole()
+    return self.role
 end
 
 function NetworkManager:connectedPlayersNum()

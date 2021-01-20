@@ -5,17 +5,18 @@ local ReplayGame = {
     ffSpeed = 25
 }
 
-function ReplayGame:enter(prevState, game, inputs, replayStates)
-    self.inputs = inputs
+function ReplayGame:enter(prevState, game, replay, loop)
+    self.inputs = replay.inputs
     self.isPaused = false
     self.frame = 1
+    self.loop = loop
     self.game = game
     self.game:init(function() return self:getGameInputs() end)
     if Debug and Debug.visualDesyncDebug == 1 then
         self.desyncDebugGame = require "game"
     end
     self.startState = self.game:getState()
-    self.replay = replayStates
+    self.debugReplay = replay.states
 end
 
 function ReplayGame:update(dt)
@@ -32,22 +33,26 @@ function ReplayGame:update(dt)
 end
 
 function ReplayGame:advanceFrame()
-    if Debug and Debug.replayDebug == 1 and self.replay[self.frame] then
-        -- vardump(self.frame, self.replay[self.frame].ball, self.game:getState().ball)
-        local desync = (self.replay[self.frame].ball.position - self.game:getState().ball.position):len()
+    if Debug and Debug.replayDebug == 1 and self.debugReplay[self.frame] then
+        -- vardump(self.frame, self.debugReplay[self.frame].ball, self.game:getState().ball)
+        local desync = (self.debugReplay[self.frame].ball.position - self.game:getState().ball.position):len()
         if desync > 0 then
             print("Frame: " .. self.frame .. " Ball desync: " .. desync)
         end
     end
     if Debug and Debug.visualDesyncDebug == 1 then
-        if self.replay[self.frame] then
-            self.desyncDebugGame:loadState(self.replay[self.frame])
+        if self.debugReplay[self.frame] then
+            self.desyncDebugGame:loadState(self.debugReplay[self.frame])
         end
     end
     if not self.inputs[self.frame] or not self.inputs[self.frame][1] or not self.inputs[self.frame][2] then
-        print("load!")
-        self.frame = 1
-        self.game:loadState(self.startState)
+        if self.loop then
+            print("Loop replay")
+            self.frame = 1
+            self.game:loadState(self.startState)
+        else
+            return
+        end
     end
     self.game:advanceFrame()
     self.frame = self.frame + 1
@@ -80,8 +85,8 @@ function ReplayGame:draw()
         self.desyncDebugGame:draw()
     end
     love.graphics.setColor(1,0,0)
-    if Debug and Debug.replayDebug == 1 and self.replay[self.frame] then
-        love.graphics.circle("line", self.replay[self.frame].ball.position.x, self.replay[self.frame].ball.position.y, 15)
+    if Debug and Debug.replayDebug == 1 and self.debugReplay[self.frame] then
+        love.graphics.circle("line", self.debugReplay[self.frame].ball.position.x, self.debugReplay[self.frame].ball.position.y, 15)
     end
 end
 
@@ -97,7 +102,7 @@ function ReplayGame:saveReplay()
     if not love.filesystem.getInfo("replays", "directory") then
         love.filesystem.createDirectory("replays")
     end
-    replayBinary = love.data.compress("data", "lz4", serpent.line(replay, {metatostring = false, comment = false}))
+    replayBinary = love.data.compress("data", "zlib", serpent.line(replay, {metatostring = false, comment = false}))
     local success, message = love.filesystem.write("replays/" .. datetime .. ".rep", replayBinary)
     if success then
         print("Replay saved to %appdate%/replays/" .. datetime .. ".rep")
@@ -118,7 +123,7 @@ function love.filedropped(file)
     end
 	print("Reading dropped file " .. file:getFilename())
     local data = file:read("data")
-    data = love.data.decompress("string", "lz4", data)
+    data = love.data.decompress("string", "zlib", data)
     local okDeserialize, replay = serpent.load(data)
     if not data or not okDeserialize or not replay or not isValidReplay(replay) then
         print("Error decoding replay")

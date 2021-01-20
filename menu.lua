@@ -1,18 +1,18 @@
 -- This is gamestate
 
-NetworkManager = require "netcode.network_manager" -- yeah, global
 WindowManager  = require "engine.ui.window_manager"
 MainMenuContainer = require "main_menu"
 LoadFileContainer = require "load_file"
 Button         = require "engine.ui.button"
 InputBox       = require "engine.ui.input_box"
 
-local aerohockeyGame = require "game"
-
 local Menu = {
     localPlayer = 1,
+    windowManager = nil
 }
+
 local MenuWindowManager
+
 function Menu:enter(prevState, game)
     local scale = 3
     love.graphics.setFont(love.graphics.newFont("resource/fonts/m3x6.ttf", 16*scale))
@@ -29,16 +29,6 @@ end
 function Menu:update(dt)
     NetworkManager:update(dt)
     MenuWindowManager:getObject(MenuWindowManager.activePage):update(dt)
-    if NetworkManager:connectedPlayersNum() == 1 then
-        self:updateSettings()
-        StateManager.switch(states.netgame, aerohockeyGame, MenuWindowManager:getObject("Main_Menu").localPlayer)
-    end
-end
-
-function Menu:updateSettings()
-    settings:set("ip", MenuWindowManager:getObject('Main_Menu').windowManager:getObject("ip_input"):getText())
-    settings:set("port", MenuWindowManager:getObject('Main_Menu').windowManager:getObject("port_input"):getText())
-    settings:save()
 end
 
 function Menu:keypressed(t)

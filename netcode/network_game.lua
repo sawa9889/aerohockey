@@ -41,6 +41,7 @@ function NetworkGame:enter(prevState, game, localPlayer)
     end
     local netPlayers = NetworkManager:getPlayers("connected")
     for k, v in pairs(netPlayers) do
+        NetworkManager:sendTo(k, NetworkPackets.StartGame("player"))
         self.remotePlayerId = k
         break -- @hack
     end
@@ -282,6 +283,19 @@ function NetworkGame:sendInputs(fromFrame)
     NetworkManager:send(localInputsPacket)
     log(4, "Sent inputs from " .. fromFrame .. " to " .. i-1)
     log(5, inputsToSend)
+end
+
+function NetworkGame:getInputs(fromFrame, maxInputs)
+    local inputs = {}
+    local i = fromFrame
+    while self.inputs[i] and i <= self.confirmedFrame and i < fromFrame + maxInputs do
+        table.insert(inputs, {
+            [self.player] = self.inputs[i][self.player]:clone(),
+            [self.opponent] = self.inputs[i][self.opponent]:clone(),
+        })
+        i = i + 1
+    end
+    return inputs
 end
 
 function NetworkGame:sendInputsAck(frame)

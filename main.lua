@@ -4,10 +4,13 @@ require "engine.debug"
 StateManager = require "lib.hump.gamestate"
 AssetManager = require "engine.asset_manager"
 
+NetworkManager = require "netcode.network_manager" -- yeah, global
+
 states = {
     menu = require "menu",
     netgame = require "netcode.network_game",
     replay = require "replay_game",
+    connectingState = require "connecting_state",
 }
 
 fonts = {
