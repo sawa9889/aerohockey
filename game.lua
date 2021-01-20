@@ -135,8 +135,7 @@ function Game:loadState(state)
     self.game_start_timer = state.game_start_timer
 end
 
-function Game:draw()
-    
+function Game:draw()    
     love.graphics.draw(self.background, self.x, self.y, 0, self.scaleX, self.scaleY )
 
     love.graphics.setFont(fonts.sevenSegment)

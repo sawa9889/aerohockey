@@ -22,12 +22,13 @@ function Menu:enter(prevState, game)
     local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
     MenuWindowManager = WindowManager()
     MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
-    -- MenuWindowManager:registerObject("Main_Menu", LoadFileContainer(MenuWindowManager))
+    MenuWindowManager:registerObject("Load_Menu", LoadFileContainer(MenuWindowManager))
+    MenuWindowManager.activePage = 'Main_Menu'
 end
 
 function Menu:update(dt)
     NetworkManager:update(dt)
-    MenuWindowManager:update(dt)
+    MenuWindowManager:getObject(MenuWindowManager.activePage):update(dt)
     if NetworkManager:connectedPlayersNum() == 1 then
         self:updateSettings()
         StateManager.switch(states.netgame, aerohockeyGame, MenuWindowManager:getObject("Main_Menu").localPlayer)
@@ -35,8 +36,8 @@ function Menu:update(dt)
 end
 
 function Menu:updateSettings()
-    settings:set("ip", MenuWindowManager:getObject("Main_Menu").windowManager:getObject("ip_input"):getText())
-    settings:set("port", MenuWindowManager:getObject("Main_Menu").windowManager:getObject("port_input"):getText())
+    settings:set("ip", MenuWindowManager:getObject('Main_Menu').windowManager:getObject("ip_input"):getText())
+    settings:set("port", MenuWindowManager:getObject('Main_Menu').windowManager:getObject("port_input"):getText())
     settings:save()
 end
 
@@ -53,7 +54,7 @@ function Menu:draw()
     love.graphics.setColor( 0.25, 0.35, 1, 1 )
     love.graphics.rectangle( 'fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight() )
     love.graphics.setColor( 1, 1, 1, 1 )
-    MenuWindowManager:draw()
+    MenuWindowManager:getObject(MenuWindowManager.activePage):draw()
 end
 
 return Menu

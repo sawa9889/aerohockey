@@ -43,9 +43,11 @@ MainMenuContainer = Class {
 	        rightColumnX, thirdLineY, 
 	        buttonWidth, buttonHeight, 
 	        function() 
-	            if replay.inputs then
-	                StateManager.switch(states.replay, require "game", replay.inputs, replay.states)
-	            end
+	        	self.parent.activePage = "Load_Menu"
+	        	-- print(self.parent.activePage)
+	            -- if replay.inputs then
+	            --     StateManager.switch(states.replay, require "game", replay.inputs, replay.states)
+	            -- end
 	        end, 
 	        'Show replay', 'relative'))
     end
