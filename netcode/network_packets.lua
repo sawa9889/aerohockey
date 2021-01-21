@@ -74,7 +74,8 @@ local packets = {
             local inputs = ""
             for _, it in ipairs(self.inputs) do
                 inputs = inputs .. " " .. it[1].x .. "," .. it[1].y .. "," .. it[2].x .. "," .. it[2].y
-            end 
+            end
+            vardump(self)
             return " " .. self.ackFrame .. " " .. self.startFrame .. " " .. #self.inputs .. inputs
         end
     },
@@ -82,7 +83,7 @@ local packets = {
         __includes = Packet,
         init = function (self, ackFrame)
             self.ackFrame = ackFrame
-            Packet.init(self, packetTypes.InputsAck)
+            Packet.init(self, packetTypes.SpectatorInputsAck)
         end,
         getBody = function(self)
             return " " .. self.ackFrame
@@ -190,7 +191,7 @@ function packets.SpectatorInputsAck.fromPacket(tokens)
     if not ackFrame or ackFrame < 0 then
         error("Input Ack packet is malformed")
     end
-    return packets.InputsAck(ackFrame)
+    return packets.SpectatorInputsAck(ackFrame)
 end
 
 function packets.StartGame.fromPacket(tokens)
