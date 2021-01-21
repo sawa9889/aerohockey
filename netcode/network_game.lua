@@ -8,6 +8,8 @@ local RingBuffer = require "netcode.ring_buffer"
 local NetworkManager = NetworkManager
 local NetworkPackets = require "netcode.network_packets"
 
+local SpectatorManager = require "netcode.spectator_manager"
+
 local log = require 'engine.logger' ("netcodeLog")
 local desyncLog = require 'engine.logger' ("desyncDebugLog")
 
@@ -47,6 +49,8 @@ function NetworkGame:enter(prevState, game, localPlayer)
     end
     self.disconnected = false
 
+    SpectatorManager:init(self, NetworkManager)
+
     self.displayFrame = 1
     self.inputFrame = self.displayFrame + self.delay
     self.confirmedFrame = self.delay
@@ -65,6 +69,7 @@ end
 
 function NetworkGame:update(dt)
     NetworkManager:update(dt)
+    SpectatorManager:update(dt)
 
     local remoteInputsPackets = NetworkManager:receive("Inputs")
     for _, packet in ipairs(remoteInputsPackets) do
@@ -268,6 +273,10 @@ function NetworkGame:remotePlayerIsDisconnected()
     return not NetworkManager:getPlayer(self.remotePlayerId) or NetworkManager:getPlayer(self.remotePlayerId).state == "disconnected"
 end
 
+function NetworkGame:getActivePlayerId()
+    return self.remotePlayerId
+end
+
 function NetworkGame:sendInputs(fromFrame)
     local inputsToSend = {}
     local i = fromFrame
@@ -280,7 +289,7 @@ function NetworkGame:sendInputs(fromFrame)
         fromFrame,
         self.confirmedFrame
     )
-    NetworkManager:send(localInputsPacket)
+    NetworkManager:sendTo(self.remotePlayerId, localInputsPacket)
     log(4, "Sent inputs from " .. fromFrame .. " to " .. i-1)
     log(5, inputsToSend)
 end
