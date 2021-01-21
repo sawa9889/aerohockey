@@ -13,7 +13,7 @@ LoadFileContainer = Class {
 	    self.windowManager:registerObject("Files list", FilesList(
 									      love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 
 									      love.graphics.getWidth()*0.8, love.graphics.getHeight()*0.7, 
-									      love.graphics.getHeight()*0.01, 'resource/images'))
+									      love.graphics.getHeight()*0.01, 'resource/test'))
     end
 }
 

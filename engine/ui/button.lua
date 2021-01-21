@@ -4,9 +4,9 @@ UIobject = require "engine.ui.uiparents.uiobject"
 -- Кнопка, умеет нажиматься и писать при этом в лог, все кнопки по хорошему должны наследоваться от этого класса и накидывать кастомные действия и картинки
 Button = Class {
     __includes = UIobject,
-    init = function(self, x, y, width, height, callback, tag, position)
-        UIobject.init(self, x, y, width and width or 100, height and height or 50, tag, position)
-        self.startClickInteraction = callback
+    init = function(self, x, y, width, height, parameters)
+        UIobject.init(self, x, y, width and width or 100, height and height or 50, parameters.tag, parameters.position)
+        self.startClickInteraction = parameters.callback
     end
 }
 

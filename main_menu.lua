@@ -16,40 +16,51 @@ MainMenuContainer = Class {
 	    self.windowManager:registerObject("port_input", InputBox(
 	        leftColumnX, firstLineY, 
 	        inputWidth, inputHeight, 
-	        nil, nil,
-	        'Port', settings:get("port"), 'relative'))
+	        {
+	        	tag = 'Port',
+	        	defaultText = settings:get("port"),
+	        	position = 'relative',
+	        }))
 	    self.windowManager:registerObject("ip_input", InputBox(
 	        leftColumnX, secondLineY, 
 	        inputWidth, inputHeight, 
-	        nil, nil,
-	        'Address', settings:get("ip"), 'relative'))
+	        {
+	        	tag = 'Address',
+	        	defaultText = settings:get("ip"),
+	        	position = 'relative',
+	        }))
 	    self.windowManager:registerObject("start_server_btn", Button(
 	        rightColumnX, firstLineY, 
 	        buttonWidth, buttonHeight, 
-	        function() 
-	            NetworkManager:startServer(self.windowManager:getObject("port_input"):getText(), 1)
-	            self.localPlayer = 1
-	        end, 
-	        'Start server', 'relative'))
+	        {
+	        	callback = function() 
+					           NetworkManager:startServer(self.windowManager:getObject("port_input"):getText(), 1)
+					           self.localPlayer = 1
+					       end,
+	        	tag = 'Start server',
+	        	position = 'relative',
+	        }))
 	    self.windowManager:registerObject("connect_btn", Button(
 	        rightColumnX, secondLineY, 
 	        buttonWidth, buttonHeight, 
-	        function() 
-	              NetworkManager:connectTo(self.windowManager:getObject("ip_input"):getText(), self.windowManager:getObject("port_input"):getText())
-	              self.localPlayer = 2
-	        end, 
-	        'Start connect', 'relative'))
+	        {
+	        	callback = function() 
+				                 NetworkManager:connectTo(self.windowManager:getObject("ip_input"):getText(), self.windowManager:getObject("port_input"):getText())
+				                 self.localPlayer = 2
+				           end,
+	        	tag = 'Start connect',
+	        	position = 'relative',
+	        }))
 	    self.windowManager:registerObject("replay_btn", Button(
 	        rightColumnX, thirdLineY, 
 	        buttonWidth, buttonHeight, 
-	        function() 
-	        	self.parent.activePage = "Load_Menu"
-	        	-- print(self.parent.activePage)
-	            -- if replay.inputs then
-	            --     StateManager.switch(states.replay, require "game", replay.inputs, replay.states)
-	            -- end
-	        end, 
-	        'Show replay', 'relative'))
+	        {
+	        	callback =  function() 
+					        	self.parent.activePage = "Load_Menu"
+					        end,
+	        	tag = 'Show replay',
+	        	position = 'relative',
+	        }))
     end
 }
 
