@@ -26,6 +26,10 @@ NetworkManager:init()
 
 function NetworkManager:sendTo(playerId, packet)
     local player = self.remotePlayers[playerId]
+    if not player or not player.ip or not player.port then
+        log(2, "Error: cannot send packet to player ".. playerId)
+        return
+    end
     networkInput:push({
         command = "send",
         packet = packet:serialize(),

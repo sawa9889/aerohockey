@@ -8,8 +8,13 @@ config = {
         syncSmoothing = 1,
         maxRemotePlayers = 8,
         connectInGame = false,
-        spectatorFFSpeed = 25,
-        spectatorSmoothSpeed = true
+        spectator = {
+            ffSpeed = 25,
+            smoothing = 20,
+            maxDelay = 60,
+            minDelay = 25,
+            framesPerAck = 10,
+        }
     },
     controls = {
         replayFF = "w",

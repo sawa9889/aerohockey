@@ -168,7 +168,7 @@ function Game:draw()
 
 
     if self.message then
-        love.graphics.setColor( 1, 0.3, 0, 1 )
+        love.graphics.setColor( colors.announcerText )
         -- local symbolsInRow = math.ceil((love.graphics.getWidth()/3)/fonts.sevenSegment.width)
         love.graphics.printf( self.message, love.graphics.getWidth()/3 , love.graphics.getHeight()/3, love.graphics.getWidth()/3, 'center')
         love.graphics.setColor( 1, 1, 1, 1 )
