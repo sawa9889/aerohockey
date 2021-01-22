@@ -6,55 +6,55 @@ InputBox       = require "engine.ui.input_box"
 MainMenuContainer = Class {
     __includes = UiObject,
     init = function(self, parent)
-    	UiObject.init(self, love.graphics.getWidth()/4, love.graphics.getHeight()/4, love.graphics.getWidth()/2, love.graphics.getHeight()/2, 'Main Menu')
-    	local firstLineY, secondLineY, thirdLineY = love.graphics.getHeight()/18, love.graphics.getHeight()/6, love.graphics.getHeight()/3
-    	local leftColumnX, rightColumnX = love.graphics.getWidth()/10, love.graphics.getWidth()/3.5
-	    local buttonHeight, buttonWidth = love.graphics.getHeight()/10, love.graphics.getWidth()/6.4
-	    local inputHeight, inputWidth = love.graphics.getHeight()/10, love.graphics.getWidth()/6.4
-    	self.parent = parent
-    	self.windowManager = WindowManager( self.x, self.y, self.width, self.height )
-	    self.windowManager:registerObject("port_input", InputBox(
-	        leftColumnX, firstLineY, 
-	        inputWidth, inputHeight, 
-	        {
-	        	tag = 'Port',
-	        	defaultText = settings:get("port"),
-	        	position = 'relative',
-	        }))
-	    self.windowManager:registerObject("ip_input", InputBox(
-	        leftColumnX, secondLineY, 
-	        inputWidth, inputHeight, 
-	        {
-	        	tag = 'Address',
-	        	defaultText = settings:get("ip"),
-	        	position = 'relative',
-	        }))
-	    self.windowManager:registerObject("start_server_btn", Button(
-	        rightColumnX, firstLineY, 
-	        buttonWidth, buttonHeight, 
-	        {
-	        	callback = function() self:startServer() end,
-	        	tag = 'Start server',
-	        	position = 'relative',
-	        }))
-	    self.windowManager:registerObject("connect_btn", Button(
-	        rightColumnX, secondLineY,
-	        buttonWidth, buttonHeight,
-	        {
-	        	callback = function() self:connectToGame() end,
-	        	tag = 'Start connect',
-	        	position = 'relative',
-	        }))
-	    self.windowManager:registerObject("replay_btn", Button(
-	        rightColumnX, thirdLineY,
-	        buttonWidth, buttonHeight,
-	        {
-				callback = function()
-					self.parent.activePage = "Load_Menu"
-				end,
-	        	tag = 'Show replay',
-	        	position = 'relative',
-	        }))
+        UiObject.init(self, love.graphics.getWidth()/4, love.graphics.getHeight()/4, love.graphics.getWidth()/2, love.graphics.getHeight()/2, 'Main Menu')
+        local firstLineY, secondLineY, thirdLineY = love.graphics.getHeight()/18, love.graphics.getHeight()/6, love.graphics.getHeight()/3
+        local leftColumnX, rightColumnX = love.graphics.getWidth()/10, love.graphics.getWidth()/3.5
+        local buttonHeight, buttonWidth = love.graphics.getHeight()/10, love.graphics.getWidth()/6.4
+        local inputHeight, inputWidth = love.graphics.getHeight()/10, love.graphics.getWidth()/6.4
+        self.parent = parent
+        self.windowManager = WindowManager( self.x, self.y, self.width, self.height )
+        self.windowManager:registerObject("port_input", InputBox(
+            leftColumnX, firstLineY, 
+            inputWidth, inputHeight, 
+            {
+                tag = 'Port',
+                defaultText = settings:get("port"),
+                position = 'relative',
+            }))
+        self.windowManager:registerObject("ip_input", InputBox(
+            leftColumnX, secondLineY, 
+            inputWidth, inputHeight, 
+            {
+                tag = 'Address',
+                defaultText = settings:get("ip"),
+                position = 'relative',
+            }))
+        self.windowManager:registerObject("start_server_btn", Button(
+            rightColumnX, firstLineY, 
+            buttonWidth, buttonHeight, 
+            {
+                callback = function() self:startServer() end,
+                tag = 'Start server',
+                position = 'relative',
+            }))
+        self.windowManager:registerObject("connect_btn", Button(
+            rightColumnX, secondLineY,
+            buttonWidth, buttonHeight,
+            {
+                callback = function() self:connectToGame() end,
+                tag = 'Start connect',
+                position = 'relative',
+            }))
+        self.windowManager:registerObject("replay_btn", Button(
+            rightColumnX, thirdLineY,
+            buttonWidth, buttonHeight,
+            {
+                callback = function()
+                    self.parent.activePage = "Load_Menu"
+                end,
+                tag = 'Show replay',
+                position = 'relative',
+            }))
     end
 }
 
@@ -86,7 +86,7 @@ function MainMenuContainer:keypressed(t)
 end
 
 function MainMenuContainer:startClickInteraction(x, y)
-	print(x,y, self.x, self.y)
+    print(x,y, self.x, self.y)
     self.windowManager:mousepressed(x, y)
 end
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
@@ -100,8 +100,8 @@ function MainMenuContainer:render()
 end
 
 function MainMenuContainer:update(dt)
-	self.windowManager:update(dt)
-	if NetworkManager:connectedPlayersNum() == 1 then
+    self.windowManager:update(dt)
+    if NetworkManager:connectedPlayersNum() == 1 then
         self:updateSettings()
         StateManager.switch(states.netgame, aerohockeyGame, MenuWindowManager:getObject("Main_Menu").localPlayer)
     end
