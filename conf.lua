@@ -23,7 +23,7 @@ config = {
         replaySave = "s"
     },
     replay = {
-        version = "1"
+        version = "2"
     }
 }
 
