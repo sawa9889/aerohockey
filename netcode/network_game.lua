@@ -312,7 +312,7 @@ function NetworkGame:sendInputsAck(frame)
 end
 
 function NetworkGame:sendDisconnect()
-    NetworkManager:disconnect(self.remotePlayerId)
+    NetworkManager:disconnect()
 end
 
 function NetworkGame:handleInputPacket(packet)
@@ -350,7 +350,9 @@ end
 function NetworkGame:draw()
     self.game:draw()
     if self.disconnected then
-        love.graphics.print("Your opponent is disconnected", 300, 300)
+        love.graphics.setColor( colors.announcerText )
+        love.graphics.printf("Your opponent\n has disconnected", 20 , love.graphics.getHeight()/3+150, love.graphics.getWidth()-40, 'center')
+        love.graphics.setColor( 1, 1, 1 )
     end
     if Debug and Debug.showFps == 1 then
         love.graphics.print(""..tostring(love.timer.getFPS( )), 2, 2)

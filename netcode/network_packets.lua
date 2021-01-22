@@ -75,7 +75,6 @@ local packets = {
             for _, it in ipairs(self.inputs) do
                 inputs = inputs .. " " .. it[1].x .. "," .. it[1].y .. "," .. it[2].x .. "," .. it[2].y
             end
-            vardump(self)
             return " " .. self.ackFrame .. " " .. self.startFrame .. " " .. #self.inputs .. inputs
         end
     },

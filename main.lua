@@ -19,6 +19,10 @@ fonts = {
     sevenSegment = love.graphics.newFont("resource/fonts/7_digit_font.ttf", 115)
 }
 
+colors = {
+    announcerText = { 1, 0.3, 0, 1 },
+}
+
 settings = require "engine.settings"
 
 replay = {}

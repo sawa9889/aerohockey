@@ -23,7 +23,6 @@ function ConnectingState:update(dt)
         else
             local startGamePackets = NetworkManager:receive("StartGame")
             for _, startPacket in ipairs(startGamePackets) do
-                vardump(startPacket)
                 if startPacket.packet.playerType == "player" then
                     StateManager.switch(states.netgame, aerohockeyGame, 2)
                 end
