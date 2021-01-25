@@ -13,7 +13,7 @@ LoadFileContainer = Class {
 	    self.windowManager:registerObject("Files list", FilesList(
 									      love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 
 									      love.graphics.getWidth()*0.8, love.graphics.getHeight()*0.8, 
-									      love.graphics.getHeight()*0.01, 'resource/test'))
+									      love.graphics.getHeight()*0.01, '%appdata%/LOVE/'))
         self.windowManager:registerObject("return_btn", Button(
             love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.8, 
             love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 

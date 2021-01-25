@@ -56,9 +56,10 @@ end
 
 -- Обработчик нажатия кнопки мыши на объекты
 function UIcontainer:mousepressed(x, y)
+    local x, y = x-self.x, y-self.y
     for ind, node in pairs(self.objects) do
         if node:getCollision(x, y) then
-            print(x,y)
+        print(x,y)
             if node.startClickInteraction then 
                 node.startClickInteraction(node, x, y)
             end

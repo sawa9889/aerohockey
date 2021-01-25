@@ -8,7 +8,7 @@ FilesList = Class {
     __includes = UiContainer,
     init = function(self, x, y, width, height, margin, directory)
         UiContainer.init(self, x, y, width, height, 1, 10, margin)
-
+        local directory = "replays"
         self.node_width = (self.width - self.margin*(self.columns-1))/self.columns
         self.node_height = (self.height - self.margin*(self.rows-1))/self.rows
         self.canvasX, self.canvasY = x, y
@@ -20,23 +20,20 @@ FilesList = Class {
                 if love.filesystem.getInfo(path_to_file).type == 'file' then
                     self:registerObject(Node(
                         function() 
-                            local file = love.filesystem.newFile( path_to_file )
-                            ok, err = file:open("r")
+                            print('Hello')
+                            local file_new = love.filesystem.newFile( path_to_file )
+                            ok, err = file_new:open("r")
                             if not ok then
                                 print("Error reading dropped file")
                                 return
                             end
-                            print("Reading dropped file " .. file:getFilename())
-                            local data = file:read("data")
-                            data = love.data.decompress("string", "lz4", data)
+                            print("Reading file " .. file_new:getFilename())
+                            local data = file_new:read("data")
+                            data = love.data.decompress("string", "zlib", data)
                             local okDeserialize, replay = serpent.load(data)
-                            if not data or not okDeserialize or not replay or not isValidReplay(replay) then
-                                print("Error decoding replay")
-                                return
-                            end
-                            StateManager.switch(states.replay, require "game", replay.inputs) 
+                            StateManager.switch(states.replay, require "game", replay) 
 
-                        end, 'File'..path_to_file))
+                        end, 'File '..path_to_file))
                 end
             end
         end

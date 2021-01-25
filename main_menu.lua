@@ -55,6 +55,18 @@ MainMenuContainer = Class {
                 tag = 'Show replay',
                 position = 'relative',
             }))
+        self.windowManager:registerObject("save_replay_btn", Button(
+            leftColumnX, thirdLineY,
+            buttonWidth, buttonHeight,
+            {
+                callback = function()		         
+		            if replay.inputs then		        	
+		                StateManager.switch(states.replay, require "game", replay, replay.states)
+		            end
+                end,
+                tag = 'Save replay',
+                position = 'relative',
+            }))
     end
 }
 
