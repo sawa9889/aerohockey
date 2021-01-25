@@ -41,4 +41,12 @@ end
 function UIobject:update(dt)
 end
 
+function UIobject:drawBoxAroundObject(color, width)
+    love.graphics.setColor( color.r, color.g, color.b, 1 )
+    love.graphics.setLineWidth( width )
+    love.graphics.rectangle( 'line', self.x, self.y, self.width, self.height )
+    love.graphics.setLineWidth( 1 )
+    love.graphics.setColor( 1, 1, 1, 1 )
+end
+
 return UIobject

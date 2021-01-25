@@ -54,6 +54,10 @@ function love.mousereleased(x, y)
     StateManager.mousereleased(x, y)
 end
 
+function love.wheelmoved(x, y)
+    StateManager.wheelmoved(x, y)
+end
+
 function love.update(dt)
     StateManager.update(dt)
 end

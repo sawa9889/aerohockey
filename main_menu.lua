@@ -85,17 +85,13 @@ function MainMenuContainer:keypressed(t)
     self.windowManager:keypressed(t)
 end
 
-function MainMenuContainer:startClickInteraction(x, y)
-    print(x,y, self.x, self.y)
+function MainMenuContainer:mousepressed(x, y)
     self.windowManager:mousepressed(x, y)
 end
+
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
 function MainMenuContainer:render()
-    love.graphics.setColor( 0, 0, 0, 1 )
-    love.graphics.setLineWidth( love.graphics.getWidth()/150 )
-    love.graphics.rectangle( 'line', self.x, self.y, self.width, self.height )
-    love.graphics.setLineWidth( 1 )
-    love.graphics.setColor( 1, 1, 1, 1 )
+    self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150)
     self.windowManager:draw()
 end
 

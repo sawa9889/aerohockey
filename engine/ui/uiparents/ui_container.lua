@@ -1,8 +1,11 @@
 Class = require "lib.hump.class"
 Node = require "engine.ui.uiparents.node"
+UiObject = require "engine.ui.uiparents.uiobject"
 
 UIcontainer = Class {
+    __includes = UiObject,
     init = function(self, x, y, width, height, columns, rows, margin)
+        UiObject.init(self, x, y, width, height)
         self.x = x and x or 100
         self.y = y and y or 100
         self.width = (width and width or love.graphics.getWidth( ))
@@ -17,16 +20,14 @@ UIcontainer = Class {
 
 function UIcontainer:refresh()
     for ind, node in pairs(self.objects) do
-        if ind >= (self.currPage-1)*self.rows*self.columns and ind < self.currPage*self.rows*self.columns then
-            ind = (ind % (self.rows * self.columns)) - 1
+        if ind > (self.currPage-1)*self.rows*self.columns and ind < self.currPage*self.rows*self.columns + 1 then
+            ind = (ind % (self.rows * self.columns))
             local node_width = (self.width - self.margin*(self.columns-1))/self.columns
             local node_height = (self.height - self.margin*(self.rows-1))/self.rows
-            -- print('Refresh', ind, node, node_width, node_height)
             node:refresh(self.x + (node_width + self.margin) * (ind % self.columns),
                          self.y + (node_height + self.margin) * (ind/self.columns - (ind / self.columns)%1),
                          node_width,
                          node_height)
-            -- print(ind, node.x,node.y, node_width, node_height, ind/self.columns , (ind / self.columns)%1)
         else
             node:hide()
         end
@@ -39,9 +40,7 @@ function UIcontainer:registerObject(node)
 end
 
 function UIcontainer:draw()
-    for _, node in pairs(self.objects) do
-        node:draw()
-    end
+    self:render()
 end
 
 function UIcontainer:changePage(inc)
@@ -59,25 +58,22 @@ end
 function UIcontainer:mousepressed(x, y)
     for ind, node in pairs(self.objects) do
         if node:getCollision(x, y) then
-            if node.clickInteraction then 
-                node.clickInteraction(node)
+            print(x,y)
+            if node.startClickInteraction then 
+                node.startClickInteraction(node, x, y)
             end
-            if node.startHoldInteraction then 
-                node.startHoldInteraction(node)
+            if node.mousepressed then 
+                node.mousepressed(node, x, y)
             end
+        elseif node.misClickInteraction then
+            node.misClickInteraction(node, x, y)
         end
     end
 end
 
 -- Обработчик отпускания кнопки мыши
 function UIcontainer:mousereleased(x, y)
-    for _, node in pairs(self.objects) do
-        if node.state == "dragged" then
-            if node.endtHoldInteraction then 
-                node.endtHoldInteraction(node)
-            end
-        end 
-    end
+
 end
 
 return UIcontainer

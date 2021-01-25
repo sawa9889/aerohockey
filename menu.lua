@@ -32,13 +32,22 @@ function Menu:update(dt)
 end
 
 function Menu:keypressed(t)
-    MenuWindowManager:keypressed(t)
+    if MenuWindowManager:getObject(MenuWindowManager.activePage).keypressed then
+        MenuWindowManager:getObject(MenuWindowManager.activePage):keypressed(t)
+    end
 end
 
 function Menu:mousepressed(x, y)
-    MenuWindowManager:mousepressed(x, y)
+    if MenuWindowManager:getObject(MenuWindowManager.activePage).mousepressed then
+        MenuWindowManager:getObject(MenuWindowManager.activePage):mousepressed(x, y)
+    end
 end
 
+function Menu:wheelmoved(x, y)
+    if MenuWindowManager:getObject(MenuWindowManager.activePage).wheelmoved then
+        MenuWindowManager:getObject(MenuWindowManager.activePage):wheelmoved(x, y)
+    end
+end
 
 function Menu:draw()
     love.graphics.setColor( 0.25, 0.35, 1, 1 )

@@ -12,8 +12,18 @@ LoadFileContainer = Class {
     	self.windowManager = WindowManager( self.x, self.y, self.width, self.height )
 	    self.windowManager:registerObject("Files list", FilesList(
 									      love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 
-									      love.graphics.getWidth()*0.8, love.graphics.getHeight()*0.7, 
+									      love.graphics.getWidth()*0.8, love.graphics.getHeight()*0.8, 
 									      love.graphics.getHeight()*0.01, 'resource/test'))
+        self.windowManager:registerObject("return_btn", Button(
+            love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.8, 
+            love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 
+            {
+                callback =  function() 
+                                self.parent.activePage = "Main_Menu"
+                            end,
+                tag = 'Return',
+                position = 'relative',
+            }))
     end
 }
 
@@ -24,13 +34,13 @@ end
 function LoadFileContainer:mousepressed(x, y)
     self.windowManager:mousepressed(x, y)
 end
--- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
+
+function LoadFileContainer:wheelmoved(x, y)
+    self.windowManager:wheelmoved(x, y)
+end
+
 function LoadFileContainer:render()
-    love.graphics.setColor( 0, 0, 0, 1 )
-    love.graphics.setLineWidth( love.graphics.getWidth()/150 )
-    love.graphics.rectangle( 'line', self.x, self.y, self.width, self.height )
-    love.graphics.setLineWidth( 1 )
-    love.graphics.setColor( 1, 1, 1, 1 )
+    self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150)
     self.windowManager:draw()
 end
 

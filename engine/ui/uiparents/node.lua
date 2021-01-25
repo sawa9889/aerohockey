@@ -9,7 +9,7 @@ Node = Class {
     __includes = UiObject,
     init = function(self, callback, tag)
         UiObject.init(self, 0, 0, 0, 0, tag)
-        self.clickInteraction = callback
+        self.startClickInteraction = callback
     end
 }
 -- Функция пересборки, смысл которой заключается в изменении Ноды под новые требования, например просто сжатие или убирание не влезающих объектов

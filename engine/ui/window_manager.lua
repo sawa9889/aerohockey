@@ -57,8 +57,10 @@ function WindowManager:mousepressed(x, y)
 	for ind, object in pairs(self.objects) do
 		if object:getCollision(x, y) then
 			if object.startClickInteraction then 
-				print(ind, x,y, self.x, self.y)
 				object.startClickInteraction(object, x, y)
+			end
+			if object.mousepressed then 
+				object.mousepressed(object, x, y)
 			end
 		elseif object.misClickInteraction then
 			object.misClickInteraction(object, x, y)
@@ -76,6 +78,16 @@ function WindowManager:mousereleased(x, y)
 		end
 	end
 end
+
+function WindowManager:wheelmoved(x, y)
+	for _, object in pairs(self.objects) do
+		if object.wheelMoved then 
+			object.wheelMoved(object, x, y)
+    		print(object.tag, x, y)
+		end
+	end
+end
+
 -- Обработчик отпускания кнопки мыши
 function WindowManager:keypressed(key)
 	for ind, object in pairs(self.objects) do
