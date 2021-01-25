@@ -1,3 +1,5 @@
+ReplayManager = require "replay_manager"
+
 local ReplayGame = {
     isPaused = true,
     inputs = {},
@@ -70,7 +72,7 @@ function ReplayGame:keypressed(key, scancode, isrepeat)
         self:advanceFrame()
     end
     if key == config.controls.replaySave and not isrepeat then
-        self:saveReplay()
+        ReplayManager:saveReplay(self.inputs)
     end
 end
 
@@ -88,48 +90,6 @@ function ReplayGame:draw()
     if Debug and Debug.replayDebug == 1 and self.debugReplay[self.frame] then
         love.graphics.circle("line", self.debugReplay[self.frame].ball.position.x, self.debugReplay[self.frame].ball.position.y, 15)
     end
-end
-
-function ReplayGame:saveReplay()
-    local datetime = os.date("%Y.%m.%d-%H.%M.%S")
-    local replay = {
-        meta = {
-            version = config.replay.version,
-            date = datetime
-        },
-        inputs = self.inputs
-    }
-    if not love.filesystem.getInfo("replays", "directory") then
-        love.filesystem.createDirectory("replays")
-    end
-    replayBinary = love.data.compress("data", "zlib", serpent.line(replay, {metatostring = false, comment = false}))
-    local success, message = love.filesystem.write("replays/" .. datetime .. ".rep", replayBinary)
-    if success then
-        print("Replay saved to %appdate%/replays/" .. datetime .. ".rep")
-    else
-        print("Error saving replay: " .. message)
-    end
-end
-
-local function isValidReplay(replay)
-    return replay and replay.meta and replay.meta.version == config.replay.version and replay.inputs
-end
-
-function love.filedropped(file)
-    ok, err = file:open("r")
-    if not ok then
-        print("Error reading dropped file")
-        return
-    end
-	print("Reading dropped file " .. file:getFilename())
-    local data = file:read("data")
-    data = love.data.decompress("string", "zlib", data)
-    local okDeserialize, replay = serpent.load(data)
-    if not data or not okDeserialize or not replay or not isValidReplay(replay) then
-        print("Error decoding replay")
-        return
-    end
-    StateManager.switch(states.replay, require "game", replay)
 end
 
 return ReplayGame

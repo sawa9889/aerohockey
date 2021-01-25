@@ -1,7 +1,8 @@
-Class       = require "lib.hump.class"
-UiContainer = require "engine.ui.uiparents.ui_container"
-Button      = require "engine.ui.button"
-Node        = require "engine.ui.uiparents.node"
+Class         = require "lib.hump.class"
+UiContainer   = require "engine.ui.uiparents.ui_container"
+Button        = require "engine.ui.button"
+Node          = require "engine.ui.uiparents.node"
+ReplayManager = require "replay_manager"
 
 -- Кнопка, умеет нажиматься и писать при этом в лог, все кнопки по хорошему должны наследоваться от этого класса и накидывать кастомные действия и картинки
 FilesList = Class {
@@ -16,24 +17,15 @@ FilesList = Class {
         local files = lfs.getDirectoryItems(directory)
         for _, file in ipairs(files) do
             if file and file ~= ''  then -- packed .exe finds "" for some reason
-                local path_to_file = directory..'/'..file
-                if love.filesystem.getInfo(path_to_file).type == 'file' then
+                local pathToFile = directory..'/'..file
+                if love.filesystem.getInfo(pathToFile).type == 'file' then
                     self:registerObject(Node(
-                        function() 
-                            print('Hello')
-                            local file_new = love.filesystem.newFile( path_to_file )
-                            ok, err = file_new:open("r")
-                            if not ok then
-                                print("Error reading dropped file")
-                                return
+                        function()
+                            local replay = ReplayManager:loadReplay(pathToFile)
+                            if replay then
+                                StateManager.switch(states.replay, require "game", replay)
                             end
-                            print("Reading file " .. file_new:getFilename())
-                            local data = file_new:read("data")
-                            data = love.data.decompress("string", "zlib", data)
-                            local okDeserialize, replay = serpent.load(data)
-                            StateManager.switch(states.replay, require "game", replay) 
-
-                        end, 'File '..path_to_file))
+                        end, 'File '..pathToFile))
                 end
             end
         end

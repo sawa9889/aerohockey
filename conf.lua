@@ -20,10 +20,11 @@ config = {
         replayFF = "w",
         replayAdvanceFrame = "d",
         replayPause = "space",
-        replaySave = "s"
+        replaySave = "s",
     },
     replay = {
-        version = "2"
+        version = "2",
+        readDroppedFiles = true,
     }
 }
 

@@ -52,7 +52,7 @@ MainMenuContainer = Class {
                 callback = function()
                     self.parent.activePage = "Load_Menu"
                 end,
-                tag = 'Show replay',
+                tag = 'Load replay',
                 position = 'relative',
             }))
         self.windowManager:registerObject("save_replay_btn", Button(
@@ -64,7 +64,7 @@ MainMenuContainer = Class {
 		                StateManager.switch(states.replay, require "game", replay, replay.states)
 		            end
                 end,
-                tag = 'Save replay',
+                tag = 'Last Replay',
                 position = 'relative',
             }))
     end
@@ -109,10 +109,6 @@ end
 
 function MainMenuContainer:update(dt)
     self.windowManager:update(dt)
-    if NetworkManager:connectedPlayersNum() == 1 then
-        self:updateSettings()
-        StateManager.switch(states.netgame, aerohockeyGame, MenuWindowManager:getObject("Main_Menu").localPlayer)
-    end
 end
 
 return MainMenuContainer
