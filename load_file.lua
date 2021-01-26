@@ -7,13 +7,13 @@ FilesList      = require "files_list"
 LoadFileContainer = Class {
     __includes = UiObject,
     init = function(self, parent)
-    	UiObject.init(self, 0, 0, love.graphics.getWidth(), love.graphics.getHeight(), 'Load File')
-    	self.parent = parent
-    	self.windowManager = WindowManager( self.x, self.y, self.width, self.height )
-	    self.windowManager:registerObject("Files list", FilesList(
-									      love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 
-									      love.graphics.getWidth()*0.8, love.graphics.getHeight()*0.8, 
-									      love.graphics.getHeight()*0.01, '%appdata%/LOVE/'))
+        UiObject.init(self, 0, 0, love.graphics.getWidth(), love.graphics.getHeight(), 'Load File')
+        self.parent = parent
+        self.windowManager = WindowManager( self.x, self.y, self.width, self.height )
+        self.windowManager:registerObject("Files list", FilesList(
+                                          love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 
+                                          love.graphics.getWidth()*0.8, love.graphics.getHeight()*0.8, 
+                                          love.graphics.getHeight()*0.01, '%appdata%/LOVE/'))
         self.windowManager:registerObject("return_btn", Button(
             love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.8, 
             love.graphics.getWidth()*0.1, love.graphics.getHeight()*0.1, 

@@ -4,6 +4,8 @@ Class = require "lib.hump.class"
 -- Сделать два объекта в итоге, горизонтальный лист, вертикальный лист
 -- Менеджер окошка, предполагается как менеджер одного небольшого или большого окошка, всех действий в нём и прочего, независимо от остальных таких же окошек
 -- Задачей объекта является отображение и считывание событий для объектов в рамках своего оконца
+-- Координаты и тип отображения хранятся в self.objects
+-- В контейнерах нет кооринат
 WindowManager = Class {
 	init = function(self, x, y, width, height, background)
 		self.objects = {}
@@ -83,7 +85,6 @@ function WindowManager:wheelmoved(x, y)
 	for _, object in pairs(self.objects) do
 		if object.wheelMoved then 
 			object.wheelMoved(object, x, y)
-    		print(object.tag, x, y)
 		end
 	end
 end

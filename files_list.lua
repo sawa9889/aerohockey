@@ -43,25 +43,33 @@ function FilesList:render()
     end
     love.graphics.setCanvas()
 
-
     -- To Do Scroll bar 
-    -- love.graphics.rectangle( 'line', self.canvasX - love.graphics.getWidth()*0.05, self.canvasY , love.graphics.getWidth()*0.05, self.height )
-    -- love.graphics.rectangle( 'fill', self.canvasX - love.graphics.getWidth()*0.05, self.canvasY , love.graphics.getWidth()*0.05, self.height )
-    self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150)
-    
+    local koef, koef2 = #self.objects / self.rows, self.rows / #self.objects > 1 and 1 or self.rows / #self.objects
+    love.graphics.setColor( 0, 0, 0, 1 )
+    love.graphics.rectangle( 'line', self.canvasX - love.graphics.getWidth()*0.05, self.canvasY , love.graphics.getWidth()*0.04, self.height )
+    love.graphics.setColor( 1, 1, 1, 1 )
+    love.graphics.rectangle( 'fill', self.canvasX - love.graphics.getWidth()*0.045
+        , self.canvasY + self.height * (1 - koef2) * - ((self.y - self.canvasY)/(self.canvasY + #self.objects * self.node_height)) 
+        , love.graphics.getWidth()*0.03, koef2 * self.height )
+    print(1 - (self.canvasY - self.y),(self.canvasY + #self.objects * self.node_height))
+    self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150, self.canvasX, self.canvasY)
+    -- start = self.canvasY - 0%
+    -- ending = self.canvasY + self.height * (1 - koef2) - 100%
     love.graphics.draw(canvas, self.canvasX, self.canvasY)
 end
 
 function FilesList:wheelMoved(x, y)
-    self.y = math.clamp(- #self.objects * self.node_height, self.y + y*5, 0 )
+    self.y = math.clamp(- #self.objects * self.node_height, self.y + y*5, self.canvasY )
+    print(- #self.objects * self.node_height, self.y + y*5, self.canvasY )
     self:refresh()
 end
 
 function FilesList:refresh()
     for ind, node in pairs(self.objects) do
         ind = ind - 1
-        node:refresh((self.node_width + self.margin) * (ind % self.columns),
-                     (self.node_height + self.margin) * ind,
+        local x, y = self.x - self.canvasX, self.y - self.canvasY
+        node:refresh(x + (self.node_width + self.margin) * (ind % self.columns),
+                     y + (self.node_height + self.margin) * ind,
                      self.node_width,
                      self.node_height)
     end
