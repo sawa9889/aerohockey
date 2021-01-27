@@ -23,13 +23,29 @@ function InputBox:render()
     love.graphics.setColor( 1, 1, 1, 1 )
 end
 
-function InputBox:drawObject(x, y, angle, width, height)
+function InputBox:drawObject(x, y, angle, width, height, simbolsInLine)
+	local simbolsInLine = simbolsInLine and simbolsInLine or 16
 	local img = AssetManager:getImage('field')
 	local widthLoc, heightLoc = img:getDimensions()
 	love.graphics.draw(img, x, y, 0, width/widthLoc, height/heightLoc )
     love.graphics.setColor( 0, 0, 0, 1 )
-    love.graphics.print(self.tag,  x - width/2.5, y + height/5)
-	love.graphics.print(self.text, x + width/5, y + height/5)
+
+    local currentFont = love.graphics.getFont( )
+
+    local outsideFontSize = height*0.8
+    local outsideFont = love.graphics.newFont("resource/fonts/m3x6.ttf", outsideFontSize)
+    local insideTextWidth, outsideTextWidth = width*0.8, outsideFont:getWidth(self.tag)
+    
+    local insideFontSize = 4*insideTextWidth/simbolsInLine
+    local insideFont  = love.graphics.newFont("resource/fonts/m3x6.ttf", insideFontSize )
+
+    love.graphics.setFont(outsideFont)
+    love.graphics.print(self.tag,  x - outsideTextWidth, y + height/2 - outsideFont:getHeight()/2)
+
+    love.graphics.setFont(insideFont)
+	love.graphics.print(self.text, x + (width - insideTextWidth)/2, y + height/2 - insideFont:getHeight()/2)
+
+    love.graphics.setFont(currentFont)
     love.graphics.setColor( 1, 1, 1, 1 )
 end
 

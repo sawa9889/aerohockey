@@ -15,7 +15,14 @@ function Button:render()
 	local width, height = img:getDimensions()
 	love.graphics.draw(img, self.x, self.y, 0, self.width/width, self.height/height )
     love.graphics.setColor( 0, 0, 0, 1 )
-    love.graphics.print(self.tag,self.x+self.width/5, self.y+self.height/5)
+
+    local insideTextWidth = width*0.6
+    local insideFontSize = 4*insideTextWidth/#self.tag
+    local insideFont  = love.graphics.newFont("resource/fonts/m3x6.ttf", insideFontSize )
+
+    love.graphics.setFont(insideFont)
+    love.graphics.print(self.tag, x + (width - insideTextWidth)/2, y + height/2 - insideFont:getHeight()/2)
+
     love.graphics.setColor( 1, 1, 1, 1 )
 end
 
@@ -28,7 +35,14 @@ function Button:drawObject(x, y, angle, width, height)
 	local widthLoc, heightLoc = img:getDimensions()
 	love.graphics.draw(img, x, y, 0, width/widthLoc, height/heightLoc )
     love.graphics.setColor( 0, 0, 0, 1 )
-    love.graphics.print(self.tag, x + width/5, y + height/5)
+
+    local insideFontSize = height*0.6
+    local insideFont  = love.graphics.newFont("resource/fonts/m3x6.ttf", insideFontSize )
+    local insideTextWidth = insideFont:getWidth(self.tag)
+
+    love.graphics.setFont(insideFont)
+    love.graphics.print(self.tag, x + (width - insideTextWidth)/2, y + height/2 - insideFont:getHeight()/2)
+
     love.graphics.setColor( 1, 1, 1, 1 )
 end
 

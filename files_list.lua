@@ -51,16 +51,15 @@ function FilesList:render()
     love.graphics.rectangle( 'fill', self.canvasX - love.graphics.getWidth()*0.045
         , self.canvasY + self.height * (1 - koef2) * - ((self.y - self.canvasY)/(self.canvasY + #self.objects * self.node_height)) 
         , love.graphics.getWidth()*0.03, koef2 * self.height )
-    print(1 - (self.canvasY - self.y),(self.canvasY + #self.objects * self.node_height))
+
     self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150, self.canvasX, self.canvasY)
-    -- start = self.canvasY - 0%
-    -- ending = self.canvasY + self.height * (1 - koef2) - 100%
+    
     love.graphics.draw(canvas, self.canvasX, self.canvasY)
 end
 
 function FilesList:wheelMoved(x, y)
     self.y = math.clamp(- #self.objects * self.node_height, self.y + y*5, self.canvasY )
-    print(- #self.objects * self.node_height, self.y + y*5, self.canvasY )
+    print(x, y)
     self:refresh()
 end
 
