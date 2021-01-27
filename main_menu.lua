@@ -9,8 +9,8 @@ MainMenuContainer = Class {
         UiObject.init(self, love.graphics.getWidth()/4, love.graphics.getHeight()/4, love.graphics.getWidth()/2, love.graphics.getHeight()/2, 'Main Menu')
         local firstLineY, secondLineY, thirdLineY = love.graphics.getHeight()/18, love.graphics.getHeight()/6, love.graphics.getHeight()/3
         local leftColumnX, rightColumnX = love.graphics.getWidth()/10, love.graphics.getWidth()/3.5
-        local buttonHeight, buttonWidth = love.graphics.getHeight()/10, love.graphics.getWidth()/6.4
-        local inputHeight, inputWidth = love.graphics.getHeight()/10, love.graphics.getWidth()/6.4
+        local buttonHeight, buttonWidth = love.graphics.getHeight()/20, love.graphics.getWidth()/6.4
+        local inputHeight, inputWidth = love.graphics.getHeight()/20, love.graphics.getWidth()/6.4
         self.parent = parent
         self.windowManager = WindowManager( self.x, self.y, self.width, self.height )
         self.windowManager:registerObject("port_input", InputBox(

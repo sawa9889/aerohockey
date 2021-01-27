@@ -51,7 +51,6 @@ function FilesList:render()
     love.graphics.rectangle( 'fill', self.canvasX - love.graphics.getWidth()*0.045
         , self.canvasY + self.height * (1 - koef2) * - ((self.y - self.canvasY)/(self.canvasY + #self.objects * self.node_height)) 
         , love.graphics.getWidth()*0.03, koef2 * self.height )
-
     self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150, self.canvasX, self.canvasY)
     
     love.graphics.draw(canvas, self.canvasX, self.canvasY)
