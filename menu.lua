@@ -1,8 +1,8 @@
 -- This is gamestate
 
-WindowManager  = require "engine.ui.window_manager"
-MainMenuContainer = require "main_menu"
-LoadFileContainer = require "load_file"
+UIobject  = require "engine.ui.uiparents.uiobject"
+-- MainMenuContainer = require "main_menu"
+-- LoadFileContainer = require "load_file"
 Button         = require "engine.ui.button"
 InputBox       = require "engine.ui.input_box"
 
@@ -20,40 +20,34 @@ function Menu:enter(prevState, game)
     local inputHeight, inputWidth = 25*scale, 100*scale
     local buttonsGap, inputsGap = 25*scale, 10*scale
     local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
-    MenuWindowManager = WindowManager()
-    MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
-    MenuWindowManager:registerObject("Load_Menu", LoadFileContainer(MenuWindowManager))
+    MenuWindowManager = UIobject(nil, {tag = 'Main menu', columns = 4, rows = 4, margin = 10})
+    -- MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
+    -- MenuWindowManager:registerObject("Load_Menu", LoadFileContainer(MenuWindowManager))
     MenuWindowManager.activePage = 'Main_Menu'
 end
 
 function Menu:update(dt)
     NetworkManager:update(dt)
-    MenuWindowManager:getObject(MenuWindowManager.activePage):update(dt)
+    MenuWindowManager:update(dt)
 end
 
 function Menu:keypressed(t)
-    if MenuWindowManager:getObject(MenuWindowManager.activePage).keypressed then
-        MenuWindowManager:getObject(MenuWindowManager.activePage):keypressed(t)
-    end
+    MenuWindowManager:keypress(t)
 end
 
 function Menu:mousepressed(x, y)
-    if MenuWindowManager:getObject(MenuWindowManager.activePage).mousepressed then
-        MenuWindowManager:getObject(MenuWindowManager.activePage):mousepressed(x, y)
-    end
+    MenuWindowManager:mousepressed(x, y)
 end
 
 function Menu:wheelmoved(x, y)
-    if MenuWindowManager:getObject(MenuWindowManager.activePage).wheelmoved then
-        MenuWindowManager:getObject(MenuWindowManager.activePage):wheelmoved(x, y)
-    end
+    MenuWindowManager:wheelmoved(x, y)
 end
 
 function Menu:draw()
     love.graphics.setColor( 0.25, 0.35, 1, 1 )
     love.graphics.rectangle( 'fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight() )
     love.graphics.setColor( 1, 1, 1, 1 )
-    MenuWindowManager:getObject(MenuWindowManager.activePage):draw()
+    MenuWindowManager:draw()
 end
 
 return Menu

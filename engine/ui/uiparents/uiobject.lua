@@ -7,48 +7,48 @@ UIobject = Class {
         self.parent = parent
         self.tag = parameters.tag
 
-        self.clickInteraction   = parameters.clickInteraction
-        self.releaseInteraction = parameters.releaseInteraction
-        self.wheelInteraction   = parameters.wheelInteraction
-        self.keyInteraction     = parameters.keyInteraction
+        self.clickInteraction   = nvl(parameters.clickInteraction, {})
+        self.releaseInteraction = nvl(parameters.releaseInteraction, {})
+        self.wheelInteraction   = nvl(parameters.wheelInteraction, {})
+        self.keyInteraction     = nvl(parameters.keyInteraction, {})
 
-        self.clickInteraction['mouspressed']
+        self.clickInteraction['mouspressed'] =
         {
             condition = function (object, x, y) return true end,
             func =  self.mouspressed
-        })
-        self.releaseInteraction['mousereleased']
+        }
+        self.releaseInteraction['mousereleased'] =
         {
             condition = function (object, x, y) return true end,
             func =  self.mousereleased
-        })
-        self.wheelInteraction['wheelmoved']
+        }
+        self.wheelInteraction['wheelmoved'] =
         {
             condition = function (object, x, y) return true end,
             func =  self.wheelmoved
-        })
-        self.keyInteraction['keypressed']
+        }
+        self.keyInteraction['keypressed'] =
         {
             condition = function (object, x, y) return true end,
             func =  self.keypressed
-        })
+        }
 
         self.x, self.y = 0, 0
         self.width = nvl(parameters.width, love.graphics.getWidth())
         self.height = nvl(parameters.height, love.graphics.getHeight())
 
-        self.objects = parameters.objects
+        self.objects = nvl(parameters.objects,{})
         self.background = parameters.background
 
-        self.columns = nvl(parameters.columns,1)
-        self.rows = nvl(parameters.rows,1)
-        self.margin = nvl(parameters.margin,10)
+        self.columns = nvl(parameters.columns, 1)
+        self.rows = nvl(parameters.rows, 1)
+        self.margin = nvl(parameters.margin, 10)
 
         self.calculatePositionMethods = {
-                                            1 = self.calculateRelationalPosition,
-                                            2 = self.calculatePositionWithAlign,
-                                            3 = self.calculatePositionInTable,
-                                            4 = self.calculateFixedPosition,
+                                            one = self.calculateRelationalPosition,
+                                            two = self.calculatePositionWithAlign,
+                                            three = self.calculatePositionInTable,
+                                            four = self.calculateFixedPosition,
                                         }
     end
 }
@@ -115,6 +115,13 @@ end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
 function UIobject:render()
+    local cell_width = (self.width - self.margin*(self.columns-1))/self.columns
+    local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
+    for ind = 0, 16, 1 do
+        x = (cell_width + self.margin) * (ind % self.columns) + cell_width/2
+        y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) + cell_height/2
+        love.graphics.rectangle( 'line', x-cell_width/2, y-cell_height/2, cell_width, cell_height )
+    end
 end
 
 function UIobject:drawBoxAroundObject(color, width, x, y)
