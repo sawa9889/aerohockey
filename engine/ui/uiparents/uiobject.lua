@@ -12,32 +12,66 @@ UIobject = Class {
         self.wheelInteraction   = nvl(parameters.wheelInteraction, {})
         self.keyInteraction     = nvl(parameters.keyInteraction, {})
 
+
+
         self.clickInteraction['mouspressed'] =
         {
             condition = function (object, x, y) return true end,
-            func =  self.mouspressed
+            func =  function (obj, x, y)
+                        for ind, object in pairs(obj.objects) do
+                            for funcName, callback in pairs(object.object.clickInteraction) do
+                                if callback.condition(object, x, y) then
+                                    callback.func(object, x, y)
+                                end
+                            end
+                        end
+                    end
         }
         self.releaseInteraction['mousereleased'] =
         {
             condition = function (object, x, y) return true end,
-            func =  self.mousereleased
+            func =  function (obj, x, y)
+                        for ind, object in pairs(obj.objects) do
+                            for funcName, callback in pairs(object.object.releaseInteractions) do
+                                if callback.condition(object, x, y) then
+                                    callback.func(object, x, y)
+                                end
+                            end
+                        end
+                    end
         }
         self.wheelInteraction['wheelmoved'] =
         {
             condition = function (object, x, y) return true end,
-            func =  self.wheelmoved
+            func =  function (obj, x, y)
+                        for ind, object in pairs(obj.objects) do
+                            for funcName, callback in pairs(object.object.wheelInteractions) do
+                                if callback.condition(object, x, y) then
+                                    callback.func(object, x, y)
+                                end
+                            end
+                        end
+                    end
         }
         self.keyInteraction['keypressed'] =
         {
-            condition = function (object, x, y) return true end,
-            func =  self.keypressed
+            condition = function (object, key) return true end,
+            func =  function (obj, key)
+                        for ind, object in pairs(obj.objects) do
+                            for funcName, callback in pairs(object.object.keyInteractions) do
+                                if callback.condition(object, key) then
+                                    callback.func(object, key)
+                                end
+                            end
+                        end
+                    end
         }
 
         self.x, self.y = 0, 0
         self.width = nvl(parameters.width, love.graphics.getWidth())
         self.height = nvl(parameters.height, love.graphics.getHeight())
 
-        self.objects = nvl(parameters.objects,{})
+        self.objects = nvl(parameters.objects, {})
         self.background = parameters.background
 
         self.columns = nvl(parameters.columns, 1)
@@ -52,6 +86,17 @@ UIobject = Class {
                                         }
     end
 }
+
+-- Регистрация объекта в окошке, для его отображения и считывания действий
+function UIobject:registerObject(index, position, parameters, object)
+    self:calculateCoordinatesAndWriteToObject(position)
+    self.objects[index] = { 
+                            position = position, 
+                            parameters = parameters,
+                            object = object,
+                          }
+end
+
 -- Всем объектам надо уметь понимать случилась ли коллизия, причем не важно с мышкой или чем-то ещё
 function UIobject:getCollision(x, y)
     return 	self.x < x and
@@ -78,11 +123,13 @@ function UIobject:calculateRelationalPosition(position, x, y)
 end
 
 function UIobject:calculatePositionInTable(position, x, y)
+    print(1, x, y)
     local ind = position.row*self.columns + position.column
     local cell_width = (self.width - self.margin*(self.columns-1))/self.columns
     local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
     x = (cell_width + self.margin) * (ind % self.columns) + cell_width/2
     y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) + cell_height/2
+    print(2, x, y)
     return x, y
 end
 
@@ -133,23 +180,14 @@ function UIobject:drawBoxAroundObject(color, width, x, y)
     love.graphics.setColor( 1, 1, 1, 1 )
 end
 
--- Регистрация объекта в окошке, для его отображения и считывания действий
-function UIobject:registerObject(index, position, parameters, object)
-    self:calculateCoordinatesAndWriteToObject(position)
-    self.objects[index] = { 
-                            position = position, 
-                            parameters = parameters,
-                            object = object,
-                          }
-end
 
 function UIobject:getObject(id)
-    return self.objects[id]
+    return self.objects[id].object
 end
 
 function UIobject:update(dt)
     for _, object in pairs(self.objects) do
-        object:update(dt)
+        object.object:update(dt)
     end
 end
 
@@ -167,7 +205,7 @@ function UIobject:draw()
 
     for _, object in pairs(self.objects) do
         love.graphics.translate(object.position.x, object.position.y)
-        object.draw()
+        object.object:draw()
         love.graphics.origin()
     end
 
@@ -175,7 +213,7 @@ end
 
 function UIobject:mousepressed(x, y)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.clickInteraction) do
+        for funcName, callback in pairs(object.object.clickInteraction) do
             if callback.condition(object, x, y) then
                 callback.func(object, x, y)
             end
@@ -185,7 +223,7 @@ end
 
 function UIobject:mousereleased(x, y)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.releaseInteractions) do
+        for funcName, callback in pairs(object.object.releaseInteractions) do
             if callback.condition(object, x, y) then
                 callback.func(object, x, y)
             end
@@ -195,7 +233,7 @@ end
 
 function UIobject:wheelmoved(x, y)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.wheelInteractions) do
+        for funcName, callback in pairs(object.object.wheelInteractions) do
             if callback.condition(object, x, y) then
                 callback.func(object, x, y)
             end
@@ -205,7 +243,7 @@ end
 
 function UIobject:keypressed(key)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.keyInteractions) do
+        for funcName, callback in pairs(object.object.keyInteractions) do
             if callback.condition(object, key) then
                 callback.func(object, key)
             end
