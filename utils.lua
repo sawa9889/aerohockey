@@ -22,3 +22,8 @@ function count(table, condition)
     end
     return result
 end
+
+function nvl(value, ifNullValue)
+    return value and value or ifNullValue
+end
+
