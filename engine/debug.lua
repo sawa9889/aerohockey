@@ -8,7 +8,8 @@ Debug = {
     ballSpeedLog = 0,
     replayDebug = 0,
     visualDesyncDebug = 0,
-    networkSocket = 0
+    networkSocket = 0,
+    drawUiDebug = 1
 }
 
 -- usage: vardump(x1, test, myVar) or vardump({ship = self, dt = dt})

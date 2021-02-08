@@ -13,7 +13,6 @@ UIobject = Class {
         self.keyInteraction     = nvl(parameters.keyInteraction, {})
 
 
-
         self.clickInteraction['mouspressed'] =
         {
             condition = function (object, x, y) return true end,
@@ -164,13 +163,22 @@ end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
 function UIobject:render()
+    if Debug.drawUiDebug then
+        self:debugDraw()
+    end
+end
+
+-- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
+function UIobject:drawCells(color)
     local cell_width = (self.width - self.margin*(self.columns-1))/self.columns
     local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
+    love.graphics.setColor( color.r, color.g, color.b, 1 )
     for ind = 0, 16, 1 do
         x = (cell_width + self.margin) * (ind % self.columns) + cell_width/2
         y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) + cell_height/2
         love.graphics.rectangle( 'line', x-cell_width/2, y-cell_height/2, cell_width, cell_height )
     end
+    love.graphics.setColor( 1, 1, 1, 1 )
 end
 
 function UIobject:drawBoxAroundObject(color, lineWidth, x, y)
@@ -189,8 +197,9 @@ function UIobject:showOriginalPoint(color)
 end
 
 function UIobject:debugDraw()
-    self:showOriginalPoint({r = 0, g = 0, b = 0 })
-    self:drawBoxAroundObject({r = 0, g = 0, b = 0 }, 4)
+    self:showOriginalPoint({r = 1, g = 0, b = 0 })
+    self:drawBoxAroundObject({r = 0, g = 1, b = 0 }, 4)
+    self:drawCells({r = 0, g = 0, b = 1 })
 end
 
 
