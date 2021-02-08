@@ -18,10 +18,11 @@ local getStubInput = function () return { [1] = Vector(0, 0), [2] = Vector(0, 0)
 local NetworkGame = {
     player = 1,
     opponent = 2,
-    disconnected = false,
+    showDisconnectedMsg = false,
     remotePlayerId = nil,
     states = RingBuffer(maxRollback+1),
     isPaused = false,
+    pausedForSeconds = 0,
     inputs = {},
     replay = {},
     predictedInputs = {},
@@ -47,7 +48,7 @@ function NetworkGame:enter(prevState, game, localPlayer)
         self.remotePlayerId = k
         break -- @hack
     end
-    self.disconnected = false
+    self.showDisconnectedMsg = false
 
     SpectatorManager:init(self, NetworkManager)
 
@@ -83,9 +84,9 @@ function NetworkGame:update(dt)
 
     if self:remotePlayerIsDisconnected() then
         self.isPaused = true
-        if not self.disconnected then
+        if not self.showDisconnectedMsg then
             NetworkManager:close()
-            self.disconnected = true
+            self.showDisconnectedMsg = true
             log(2, "Remote player has disconnected!")
         end
         return
@@ -102,7 +103,12 @@ function NetworkGame:update(dt)
 
     if self.isPaused then
         log(4, "The game is PAUSED")
+        self.pausedForSeconds = self.pausedForSeconds + dt
+        if self.pausedForSeconds > config.network.disconnectTimer then
+            self.showDisconnectedMsg = true
+        end
     else
+        self.showDisconnectedMsg = false
         local localInputs = self:getLocalInputs()
         self:addInputs(self.inputFrame, self.player, localInputs)
 
@@ -349,7 +355,7 @@ end
 
 function NetworkGame:draw()
     self.game:draw()
-    if self.disconnected then
+    if self.showDisconnectedMsg then
         love.graphics.setColor( colors.announcerText )
         love.graphics.printf("Your opponent\n has disconnected", 20 , love.graphics.getHeight()/3+150, love.graphics.getWidth()-40, 'center')
         love.graphics.setColor( 1, 1, 1 )

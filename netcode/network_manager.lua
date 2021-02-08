@@ -78,6 +78,10 @@ function NetworkManager:startServer(port, maxRemotePlayers)
     })
 end
 
+function love.quit()
+    NetworkManager:disconnect()
+end
+
 function NetworkManager:disconnect(playerId)
     local playersToDisconnect = {}
     if not playerId then
@@ -150,7 +154,12 @@ function NetworkManager:update(dt)
             log(4, "Sent hello to server")
             self:sendTo("server", NetworkPackets.Hello())
             server.state = "hello_sent"
+            server.connectionRetryTimer = netConfig.connectionRetryTimer
         elseif server.state == "hello_sent" then
+            server.connectionRetryTimer = server.connectionRetryTimer - dt
+            if server.connectionRetryTimer < 0 then
+                server.state = "connecting"
+            end
             local acks = self:receive("HelloAck")
             for _, ack in ipairs(acks) do
                 -- @todo check ip port?
