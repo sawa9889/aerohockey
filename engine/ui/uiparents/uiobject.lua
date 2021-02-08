@@ -18,9 +18,10 @@ UIobject = Class {
             condition = function (object, x, y) return true end,
             func =  function (obj, x, y)
                         for ind, object in pairs(obj.objects) do
-                            for funcName, callback in pairs(object.object.clickInteraction) do
-                                if callback.condition(object, x, y) then
-                                    callback.func(object, x, y)
+                            local targetObject = object.object
+                            for funcName, callback in pairs(targetObject.clickInteraction) do
+                                if callback.condition(targetObject, x, y) then
+                                    callback.func(targetObject, x, y)
                                 end
                             end
                         end
@@ -31,9 +32,10 @@ UIobject = Class {
             condition = function (object, x, y) return true end,
             func =  function (obj, x, y)
                         for ind, object in pairs(obj.objects) do
-                            for funcName, callback in pairs(object.object.releaseInteractions) do
-                                if callback.condition(object, x, y) then
-                                    callback.func(object, x, y)
+                            local targetObject = object.object
+                            for funcName, callback in pairs(targetObject.releaseInteractions) do
+                                if callback.condition(targetObject, x, y) then
+                                    callback.func(targetObject, x, y)
                                 end
                             end
                         end
@@ -44,9 +46,10 @@ UIobject = Class {
             condition = function (object, x, y) return true end,
             func =  function (obj, x, y)
                         for ind, object in pairs(obj.objects) do
-                            for funcName, callback in pairs(object.object.wheelInteractions) do
-                                if callback.condition(object, x, y) then
-                                    callback.func(object, x, y)
+                            local targetObject = object.object
+                            for funcName, callback in pairs(targetObject.wheelInteractions) do
+                                if callback.condition(targetObject, x, y) then
+                                    callback.func(targetObject, x, y)
                                 end
                             end
                         end
@@ -54,12 +57,13 @@ UIobject = Class {
         }
         self.keyInteraction['keypressed'] =
         {
-            condition = function (object, key) return true end,
+            condition = function (object, x, y) return true end,
             func =  function (obj, key)
                         for ind, object in pairs(obj.objects) do
-                            for funcName, callback in pairs(object.object.keyInteractions) do
-                                if callback.condition(object, key) then
-                                    callback.func(object, key)
+                            local targetObject = object.object
+                            for funcName, callback in pairs(targetObject.keyInteractions) do
+                                if callback.condition(targetObject, key) then
+                                    callback.func(targetObject, key)
                                 end
                             end
                         end
@@ -87,12 +91,21 @@ UIobject = Class {
 }
 
 -- Регистрация объекта в окошке, для его отображения и считывания действий
-function UIobject:registerObject(index, position, parameters, parent)
+function UIobject:registerNewObject(index, position, parameters, parent)
     local object = UIobject(parent, parameters)
     self:calculateCoordinatesAndWriteToObject(position)
     self.objects[index] = { 
                             position = position, 
                             parameters = parameters,
+                            object = object,
+                          }
+end
+
+function UIobject:registerObject(index, position, object)
+    self:calculateCoordinatesAndWriteToObject(position)
+    self.objects[index] = { 
+                            position = position, 
+                            parameters = nil,
                             object = object,
                           }
 end
@@ -119,8 +132,8 @@ end
 
 function UIobject:calculateRelationalPosition(position, x, y)
     if position.left or position.right or position.up or position.down then
-        x = self.x + nvl(position.left,0) + (self.width - nvl(position.right, self.width))
-        y = self.y + nvl(position.up,0) + (self.height - nvl(position.down, self.height))
+        x = x + nvl(position.left,0) + (self.width - nvl(position.right, self.width))
+        y = y + nvl(position.up,0) + (self.height - nvl(position.down, self.height))
     end
     print('calculateRelationalPosition', x, y)
     return x, y
@@ -230,12 +243,13 @@ end
 function UIobject:draw()
     self:drawBackground()
     self:render()
-
+    local transform = love.math.newTransform()
     for _, object in pairs(self.objects) do
-        print(object.position.x, object.position.y)
-        love.graphics.translate(object.position.x, object.position.y)
+        transform = transform:translate(object.position.x, object.position.y)
+        love.graphics.applyTransform( transform )
         object.object:draw()
-        love.graphics.origin()
+        transform = transform:reset()
+        love.graphics.applyTransform( transform )
     end
 
 end

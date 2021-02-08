@@ -21,10 +21,27 @@ function Menu:enter(prevState, game)
     local buttonsGap, inputsGap = 25*scale, 10*scale
     local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
     MenuWindowManager = UIobject(nil, {tag = 'Main menu', columns = 4, rows = 4, margin = 10})
+    -- MenuWindowManager:registerObject("test_inner_table", 
+    --                                  {row = 2, column = 2}, 
+    --                                  {  
+    --                                     tag = 'Test1', 
+    --                                     columns = 1, 
+    --                                     rows = 1, 
+    --                                     margin = 0, 
+    --                                     width = 200, 
+    --                                     height = 50, 
+    --                                     background = AssetManager:getImage('experimental_button')
+    --                                 },
+    --                                  MenuWindowManager)
     MenuWindowManager:registerObject("test_inner_table", 
                                      {row = 2, column = 2}, 
-                                     {tag = 'Test1', columns = 2, rows = 2, margin = 0, width = 100, height = 100},
-                                     MenuWindowManager)
+                                     Button(MenuWindowManager, {  
+                                        tag = 'Test1', 
+                                        width = 200, 
+                                        height = 50, 
+                                        background = AssetManager:getImage('experimental_button')
+                                    }))
+
     -- MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
     -- MenuWindowManager:registerObject("Load_Menu", LoadFileContainer(MenuWindowManager))
     MenuWindowManager.activePage = 'Main_Menu'
