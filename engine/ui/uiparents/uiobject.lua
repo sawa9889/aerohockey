@@ -71,7 +71,6 @@ UIobject = Class {
         self.height = nvl(parameters.height, love.graphics.getHeight())
 
         self.objects = nvl(parameters.objects, {})
-        print(self.tag, self.objects)
         self.background = parameters.background
 
         self.columns = nvl(parameters.columns, 1)
@@ -114,23 +113,28 @@ end
 function UIobject:calculateFixedPosition(position, x, y)
     x = nvl(position.fixedX, x)
     y = nvl(position.fixedY, y)
+    print('calculateFixedPosition', x, y)
     return x, y
 end
 
 function UIobject:calculateRelationalPosition(position, x, y)
-    x = self.x + nvl(position.left,0) + (self.width - nvl(position.right, self.width))
-    y = self.y + nvl(position.up,0) + (self.height - nvl(position.down, self.height))
+    if position.left or position.right or position.up or position.down then
+        x = self.x + nvl(position.left,0) + (self.width - nvl(position.right, self.width))
+        y = self.y + nvl(position.up,0) + (self.height - nvl(position.down, self.height))
+    end
+    print('calculateRelationalPosition', x, y)
     return x, y
 end
 
 function UIobject:calculatePositionInTable(position, x, y)
-    print(1, x, y)
-    local ind = position.row*self.columns + position.column
-    local cell_width = (self.width - self.margin*(self.columns-1))/self.columns
-    local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
-    x = (cell_width + self.margin) * (ind % self.columns) + cell_width/2
-    y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) + cell_height/2
-    print(2, x, y)
+    if position.row and position.column then
+        local ind = position.row*self.columns + position.column
+        local cell_width = (self.width - self.margin*(self.columns-1))/self.columns
+        local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
+        x = (cell_width + self.margin) * (ind % self.columns)
+        y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1)
+    end
+    print('calculatePositionInTable', x, y)
     return x, y
 end
 
@@ -151,6 +155,7 @@ function UIobject:calculatePositionWithAlign(position, x, y)
         x = self.width/2
         y = self.height
     end
+    print('calculatePositionWithAlign', x, y)
     return x, y
 end
 
@@ -159,6 +164,7 @@ function UIobject:calculateCoordinatesAndWriteToObject(position)
     for ind, func in pairs(self.calculatePositionMethods) do
         position.x, position.y = func(self, position, position.x, position.y)
     end
+    print('Calculated', position.x, position.y)
 end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
@@ -173,7 +179,7 @@ function UIobject:drawCells(color)
     local cell_width = (self.width - self.margin*(self.columns-1))/self.columns
     local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
     love.graphics.setColor( color.r, color.g, color.b, 1 )
-    for ind = 0, 16, 1 do
+    for ind = 0, self.columns * self.rows - 1, 1 do
         x = (cell_width + self.margin) * (ind % self.columns) + cell_width/2
         y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) + cell_height/2
         love.graphics.rectangle( 'line', x-cell_width/2, y-cell_height/2, cell_width, cell_height )
@@ -226,6 +232,7 @@ function UIobject:draw()
     self:render()
 
     for _, object in pairs(self.objects) do
+        print(object.position.x, object.position.y)
         love.graphics.translate(object.position.x, object.position.y)
         object.object:draw()
         love.graphics.origin()
