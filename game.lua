@@ -266,7 +266,8 @@ function Game:resetGameState()
     self.ball.shape:moveTo(self.ball_start.x, self.ball_start.y)
     self.ball.velocity = Vector(0, 0)
     self.ball_queue.elements = {}
-    if self.rightPlayerPoints == self.goal_score or self.leftPlayerPoints == self.goal_score then 
+    if (self.rightPlayerPoints >= self.goal_score or self.leftPlayerPoints >= self.goal_score)
+        and math.abs(self.leftPlayerPoints - self.rightPlayerPoints) > 1 then
         self.message = self.rightPlayerPoints > self.leftPlayerPoints and 'Right player wins' or 'Left player wins'
         self.game_start_timer = -45
         self.rightPlayerPoints = 0
