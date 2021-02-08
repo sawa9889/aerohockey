@@ -73,6 +73,7 @@ MainMenuContainer = Class {
 function MainMenuContainer:startServer()
     StateManager.switch(states.connectingState, {
         isServer = true,
+        ip = self:getIpInput(), -- it's not necessary, but connection state saves this to settings
         port = self:getPortInput()
     })
 end

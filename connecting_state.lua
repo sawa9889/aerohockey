@@ -11,6 +11,7 @@ function ConnectingState:enter(prevState, connectionParams)
     else
         NetworkManager:connectTo(connectionParams.ip, connectionParams.port)
     end
+    self:updateSettings()
 end
 
 function ConnectingState:update(dt)
@@ -18,6 +19,7 @@ function ConnectingState:update(dt)
 
     if NetworkManager:connectedPlayersNum() > 0 then
         self:updateSettings()
+        settings:save()
         if NetworkManager:getRole() == "server" then
             StateManager.switch(states.netgame, aerohockeyGame, 1)
         else
@@ -37,7 +39,6 @@ end
 function ConnectingState:updateSettings()
     settings:set("ip", self.connectionParams.ip)
     settings:set("port", self.connectionParams.port)
-    settings:save()
 end
 
 function ConnectingState:keypressed(key)
