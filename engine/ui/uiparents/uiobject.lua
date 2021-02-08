@@ -72,6 +72,7 @@ UIobject = Class {
         self.height = nvl(parameters.height, love.graphics.getHeight())
 
         self.objects = nvl(parameters.objects, {})
+        print(self.tag, self.objects)
         self.background = parameters.background
 
         self.columns = nvl(parameters.columns, 1)
@@ -88,7 +89,8 @@ UIobject = Class {
 }
 
 -- Регистрация объекта в окошке, для его отображения и считывания действий
-function UIobject:registerObject(index, position, parameters, object)
+function UIobject:registerObject(index, position, parameters, parent)
+    local object = UIobject(parent, parameters)
     self:calculateCoordinatesAndWriteToObject(position)
     self.objects[index] = { 
                             position = position, 
@@ -171,13 +173,24 @@ function UIobject:render()
     end
 end
 
-function UIobject:drawBoxAroundObject(color, width, x, y)
+function UIobject:drawBoxAroundObject(color, lineWidth, x, y)
     local x, y = x and x or self.x, y and y or self.y
     love.graphics.setColor( color.r, color.g, color.b, 1 )
-    love.graphics.setLineWidth( width )
+    love.graphics.setLineWidth( lineWidth )
     love.graphics.rectangle( 'line', x, y, self.width, self.height )
     love.graphics.setLineWidth( 1 )
     love.graphics.setColor( 1, 1, 1, 1 )
+end
+
+function UIobject:showOriginalPoint(color)
+    love.graphics.setColor( color.r, color.g, color.b, 1 )
+    love.graphics.circle( 'fill', self.x, self.y, 4, 4 )
+    love.graphics.setColor( 1, 1, 1, 1 )
+end
+
+function UIobject:debugDraw()
+    self:showOriginalPoint({r = 0, g = 0, b = 0 })
+    self:drawBoxAroundObject({r = 0, g = 0, b = 0 }, 4)
 end
 
 
@@ -213,9 +226,10 @@ end
 
 function UIobject:mousepressed(x, y)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.object.clickInteraction) do
-            if callback.condition(object, x, y) then
-                callback.func(object, x, y)
+        local targetObject = object.object
+        for funcName, callback in pairs(targetObject.clickInteraction) do
+            if callback.condition(targetObject, x, y) then
+                callback.func(targetObject, x, y)
             end
         end
     end
@@ -223,9 +237,10 @@ end
 
 function UIobject:mousereleased(x, y)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.object.releaseInteractions) do
-            if callback.condition(object, x, y) then
-                callback.func(object, x, y)
+        local targetObject = object.object
+        for funcName, callback in pairs(targetObject.releaseInteraction) do
+            if callback.condition(targetObject, x, y) then
+                callback.func(targetObject, x, y)
             end
         end
     end
@@ -233,9 +248,10 @@ end
 
 function UIobject:wheelmoved(x, y)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.object.wheelInteractions) do
-            if callback.condition(object, x, y) then
-                callback.func(object, x, y)
+        local targetObject = object.object
+        for funcName, callback in pairs(targetObject.wheelInteraction) do
+            if callback.condition(targetObject, x, y) then
+                callback.func(targetObject, x, y)
             end
         end
     end
@@ -243,9 +259,10 @@ end
 
 function UIobject:keypressed(key)
     for ind, object in pairs(self.objects) do
-        for funcName, callback in pairs(object.object.keyInteractions) do
-            if callback.condition(object, key) then
-                callback.func(object, key)
+        local targetObject = object.object
+        for funcName, callback in pairs(targetObject.keyInteraction) do
+            if callback.condition(targetObject, key) then
+                callback.func(targetObject, key)
             end
         end
     end

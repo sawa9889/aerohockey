@@ -23,8 +23,8 @@ function Menu:enter(prevState, game)
     MenuWindowManager = UIobject(nil, {tag = 'Main menu', columns = 4, rows = 4, margin = 10})
     MenuWindowManager:registerObject("test_inner_table", 
                                      {row = 2, column = 2}, 
-                                     {tag = 'Test1', columns = 1, rows = 2, margin = 0, row = 2, column = 2},
-                                     UIobject(MenuWindowManager, {tag = 'Test1', columns = 1, rows = 2, margin = 0, row = 2, column = 2}))
+                                     {tag = 'Test1', columns = 1, rows = 2, margin = 0},
+                                     MenuWindowManager)
     -- MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
     -- MenuWindowManager:registerObject("Load_Menu", LoadFileContainer(MenuWindowManager))
     MenuWindowManager.activePage = 'Main_Menu'
