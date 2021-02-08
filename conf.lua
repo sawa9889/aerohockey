@@ -25,7 +25,7 @@ config = {
         replaySave = "s",
     },
     replay = {
-        version = "2",
+        version = "3",
         readDroppedFiles = true,
     }
 }

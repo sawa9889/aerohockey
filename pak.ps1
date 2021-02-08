@@ -1,4 +1,4 @@
-$appname = "platformer-example"
+$appname = "aerohockey"
 $love_dir = "..\love-11.3-win64"
 $build_dir = ".\pkg"
 

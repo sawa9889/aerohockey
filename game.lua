@@ -185,9 +185,9 @@ function Game:getPlayerdx(target, playerNum)
         end
     else
         if playerNum == 1 then
-            target.x = math.clamp(self.arena_start.x - self.circle_range + self.arena_width/3, target.x, self.arena_start.x + self.circle_range )
+            target.x = math.clamp(self.arena_start.x - self.circle_range + self.arena_width/(3 - self.game_start_timer/self.game_start_time), target.x, self.arena_start.x + self.circle_range )
         else
-            target.x = math.clamp(self.arena_start.x + self.circle_range + self.arena_width*2/3, target.x, self.arena_start.x - self.circle_range + self.arena_width)
+            target.x = math.clamp(self.arena_start.x + self.circle_range + self.arena_width*(2/3 - 1/6 * self.game_start_timer/self.game_start_time), target.x, self.arena_start.x - self.circle_range + self.arena_width)
         end
 
     end
