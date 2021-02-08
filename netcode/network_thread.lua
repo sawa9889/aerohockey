@@ -37,18 +37,25 @@ local function sendPacket(packet, ip, port)
     else
         result, msg = udp:sendto(packet, ip, port)
     end
-    if not result then log(2, "Send error ", result, msg, packet, ip, port) end
+    if not result then log(2, "Error sending: <" .. packet .. "> to " .. ip .. ":" .. port .. ": \"" .. msg .. "\", got:", result) end
 end
 
 local function awaitConnection(host, port)
     local result, msg = udp:setsockname(host, port)
-    if not result then log(2, "Set sock error ", result, msg, host, port) end
+    if not result then
+        log(1, "Set sock error ", result, msg, host, port)
+        return
+    end
     listen = true
 end
 
 local function connect(host, port)
     log(4, "Connecting to ".. host .. ":" .. port )
-    udp:setpeername(host, port)
+    local result, msg = udp:setpeername(host, port)
+    if not result or msg then
+        log(1, "Connecting error: " .. msg)
+        return
+    end
     peer = {host = host, port = port}
     isConnected = true
     listen = true
