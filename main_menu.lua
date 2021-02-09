@@ -1,72 +1,68 @@
 Class = require "lib.hump.class"
 UiObject = require "engine.ui.uiparents.uiobject"
-Button         = require "engine.ui.button"
-InputBox       = require "engine.ui.input_box"
 
 MainMenuContainer = Class {
     __includes = UiObject,
-    init = function(self, parent)
-        UiObject.init(self, love.graphics.getWidth()/4, love.graphics.getHeight()/4, love.graphics.getWidth()/2, love.graphics.getHeight()/2, 'Main Menu')
-        local firstLineY, secondLineY, thirdLineY = love.graphics.getHeight()/18, love.graphics.getHeight()/6, love.graphics.getHeight()/3
-        local leftColumnX, rightColumnX = love.graphics.getWidth()/10, love.graphics.getWidth()/3.5
-        local buttonHeight, buttonWidth = love.graphics.getHeight()/20, love.graphics.getWidth()/6.4
-        local inputHeight, inputWidth = love.graphics.getHeight()/20, love.graphics.getWidth()/6.4
-        self.parent = parent
-        self.windowManager = WindowManager( self.x, self.y, self.width, self.height )
-        self.windowManager:registerObject("port_input", InputBox(
-            leftColumnX, firstLineY, 
-            inputWidth, inputHeight, 
-            {
-                tag = 'Port',
-                defaultText = settings:get("port"),
-                position = 'relative',
-            }))
-        self.windowManager:registerObject("ip_input", InputBox(
-            leftColumnX, secondLineY, 
-            inputWidth, inputHeight, 
-            {
-                tag = 'Address',
-                defaultText = settings:get("ip"),
-                position = 'relative',
-            }))
-        self.windowManager:registerObject("start_server_btn", Button(
-            rightColumnX, firstLineY, 
-            buttonWidth, buttonHeight, 
-            {
-                callback = function() self:startServer() end,
-                tag = 'Start server',
-                position = 'relative',
-            }))
-        self.windowManager:registerObject("connect_btn", Button(
-            rightColumnX, secondLineY,
-            buttonWidth, buttonHeight,
-            {
-                callback = function() self:connectToGame() end,
-                tag = 'Start connect',
-                position = 'relative',
-            }))
-        self.windowManager:registerObject("replay_btn", Button(
-            rightColumnX, thirdLineY,
-            buttonWidth, buttonHeight,
-            {
-                callback = function()
-                    self.parent.activePage = "Load_Menu"
-                end,
-                tag = 'Load replay',
-                position = 'relative',
-            }))
-        self.windowManager:registerObject("save_replay_btn", Button(
-            leftColumnX, thirdLineY,
-            buttonWidth, buttonHeight,
-            {
-                callback = function()		         
-		            if replay.inputs then		        	
-		                StateManager.switch(states.replay, require "game", replay, replay.states)
-		            end
-                end,
-                tag = 'Last Replay',
-                position = 'relative',
-            }))
+    init = function(self, parent, parameters)
+        UiObject.init(self, parent, parameters)
+        self:registerObject("Start_server_button", 
+                                     {row = 2, column = 3}, 
+                                     Button(self, {  
+                                        tag = 'Start server', 
+                                        width = 200, 
+                                        height = 50, 
+                                        background = AssetManager:getImage('experimental_button'),
+                                        callback = function() self:startServer() end
+                                    }))
+        self:registerObject("start_connection_button", 
+                                         {row = 3, column = 3}, 
+                                         Button(self, {  
+                                            tag = 'Start connection', 
+                                            width = 200, 
+                                            height = 50, 
+                                            background = AssetManager:getImage('experimental_button'),
+                                            callback = function() self:connectToGame() end
+                                        }))
+        self:registerObject("show_last_replay_button", 
+                                         {row = 4, column = 2}, 
+                                         Button(self, {  
+                                            tag = 'Show replay', 
+                                            width = 200, 
+                                            height = 50, 
+                                            background = AssetManager:getImage('experimental_button'),
+                                            callback = function () self.parent.activePage = "Load_Menu" end
+                                        }))
+        self:registerObject("show_saved_replays_button", 
+                                         {row = 4, column = 3}, 
+                                         Button(self, {  
+                                            tag = 'Show saved replays', 
+                                            width = 200, 
+                                            height = 50, 
+                                            background = AssetManager:getImage('experimental_button'),
+                                            callback = function () 
+                                                            if replay.inputs then                    
+                                                                StateManager.switch(states.replay, require "game", replay, replay.states)
+                                                            end 
+                                                        end
+                                        }))
+        self:registerObject("ip_adress_input", 
+                                         {row = 2, column = 2}, 
+                                         InputBox(self, {  
+                                            tag = 'Ip address', 
+                                            width = 200, 
+                                            height = 50, 
+                                            background = AssetManager:getImage('field'),
+                                            defaultText = settings:get("ip")
+                                        }))
+        self:registerObject("port_input", 
+                                         {row = 3, column = 2}, 
+                                         InputBox(self, {  
+                                            tag = 'Port', 
+                                            width = 200, 
+                                            height = 50, 
+                                            background = AssetManager:getImage('field'),
+                                            defaultText = settings:get("port")
+                                        }))
     end
 }
 
@@ -87,29 +83,16 @@ function MainMenuContainer:connectToGame()
 end
 
 function MainMenuContainer:getIpInput()
-    return self.windowManager:getObject("ip_input"):getText()
+    return self.objects['ip_adress_input'].object:getText()
 end
 
 function MainMenuContainer:getPortInput()
-    return self.windowManager:getObject("port_input"):getText()
-end
-
-function MainMenuContainer:keypressed(t)
-    self.windowManager:keypressed(t)
-end
-
-function MainMenuContainer:mousepressed(x, y)
-    self.windowManager:mousepressed(x, y)
+    return self.objects["port_input"].object:getText()
 end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
 function MainMenuContainer:render()
     self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150)
-    self.windowManager:draw()
-end
-
-function MainMenuContainer:update(dt)
-    self.windowManager:update(dt)
 end
 
 return MainMenuContainer

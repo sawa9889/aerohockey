@@ -9,20 +9,17 @@ Button = Class {
         self.clickInteraction['click'] = 
         {
             condition = function (object, x, y) 
-                            local screenX, screenY = love.graphics.inverseTransformPoint( x, y )
-                            print(object.tag,'Clicked', x, y, screenX, screenY, object:getCollision(x, y), object:getCollision(screenX, screenY)) 
                             return object:getCollision(x, y) 
                         end,
             func =  function (obj, x, y)
-                        
+                        print(self.tag, 'Clicked')
                     end
         }
-        self:registerNewObject('Label', { align = 'center' }, {tag = 'test_label', text = self.tag, width = self.width*0.8, height = self.height*0.8 } , self)
+        self:registerObject('Label', 
+                               { left = self.width*0.1, up = self.height*0.1}, 
+                               Label(self, {tag = 'test_button_label', text = self.tag, width = self.width*0.8, height = self.height*0.8 }))
     end
 }
 
-function Button.defaultCallback(self)
-     print(self.tag,'Clicked')
-end
 
 return Button

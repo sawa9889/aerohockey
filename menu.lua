@@ -1,9 +1,10 @@
 -- This is gamestate
 
 UIobject  = require "engine.ui.uiparents.uiobject"
--- MainMenuContainer = require "main_menu"
+MainMenuContainer = require "main_menu"
 -- LoadFileContainer = require "load_file"
 Button         = require "engine.ui.button"
+Label         = require "engine.ui.label"
 InputBox       = require "engine.ui.input_box"
 
 local Menu = {
@@ -20,29 +21,8 @@ function Menu:enter(prevState, game)
     local inputHeight, inputWidth = 25*scale, 100*scale
     local buttonsGap, inputsGap = 25*scale, 10*scale
     local x, y = love.graphics.getWidth()/2 - buttonWidth, love.graphics.getHeight()/2 - 2*buttonHeight
-    MenuWindowManager = UIobject(nil, {tag = 'Main menu', columns = 4, rows = 4, margin = 10})
-    -- MenuWindowManager:registerObject("test_inner_table", 
-    --                                  {row = 2, column = 2}, 
-    --                                  {  
-    --                                     tag = 'Test1', 
-    --                                     columns = 1, 
-    --                                     rows = 1, 
-    --                                     margin = 0, 
-    --                                     width = 200, 
-    --                                     height = 50, 
-    --                                     background = AssetManager:getImage('experimental_button')
-    --                                 },
-    --                                  MenuWindowManager)
-    MenuWindowManager:registerObject("test_inner_table", 
-                                     {row = 2, column = 2}, 
-                                     Button(MenuWindowManager, {  
-                                        tag = 'Test1', 
-                                        width = 200, 
-                                        height = 50, 
-                                        background = AssetManager:getImage('experimental_button')
-                                    }))
-
-    -- MenuWindowManager:registerObject("Main_Menu", MainMenuContainer(MenuWindowManager))
+    MenuWindowManager = UIobject(nil, {tag = 'Main menu', columns = 6, rows = 6, margin = 10})
+    MenuWindowManager:registerObject("Main_Menu", {} , MainMenuContainer(MenuWindowManager, {}))
     -- MenuWindowManager:registerObject("Load_Menu", LoadFileContainer(MenuWindowManager))
     MenuWindowManager.activePage = 'Main_Menu'
 end
@@ -53,7 +33,7 @@ function Menu:update(dt)
 end
 
 function Menu:keypressed(t)
-    MenuWindowManager:keypress(t)
+    MenuWindowManager:keypressed(t)
 end
 
 function Menu:mousepressed(x, y)

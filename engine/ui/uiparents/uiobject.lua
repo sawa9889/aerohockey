@@ -33,7 +33,7 @@ UIobject = Class {
             func =  function (obj, x, y)
                         for ind, object in pairs(obj.objects) do
                             local targetObject = object.object
-                            for funcName, callback in pairs(targetObject.releaseInteractions) do
+                            for funcName, callback in pairs(targetObject.releaseInteraction) do
                                 if callback.condition(targetObject, x, y) then
                                     callback.func(targetObject, x, y)
                                 end
@@ -47,7 +47,7 @@ UIobject = Class {
             func =  function (obj, x, y)
                         for ind, object in pairs(obj.objects) do
                             local targetObject = object.object
-                            for funcName, callback in pairs(targetObject.wheelInteractions) do
+                            for funcName, callback in pairs(targetObject.wheelInteraction) do
                                 if callback.condition(targetObject, x, y) then
                                     callback.func(targetObject, x, y)
                                 end
@@ -61,7 +61,7 @@ UIobject = Class {
             func =  function (obj, key)
                         for ind, object in pairs(obj.objects) do
                             local targetObject = object.object
-                            for funcName, callback in pairs(targetObject.keyInteractions) do
+                            for funcName, callback in pairs(targetObject.keyInteraction) do
                                 if callback.condition(targetObject, key) then
                                     callback.func(targetObject, key)
                                 end
@@ -87,6 +87,7 @@ UIobject = Class {
                                             three = self.calculatePositionInTable,
                                             four = self.calculateFixedPosition,
                                         }
+                                        print(self.tag, 'Created')
     end
 }
 
@@ -94,6 +95,7 @@ UIobject = Class {
 function UIobject:registerNewObject(index, position, parameters, parent)
     local object = UIobject(parent, parameters)
     self:calculateCoordinatesAndWriteToObject(position)
+    object.x, object.y = position.x, position.y
     self.objects[index] = { 
                             position = position, 
                             parameters = parameters,
@@ -103,6 +105,7 @@ end
 
 function UIobject:registerObject(index, position, object)
     self:calculateCoordinatesAndWriteToObject(position)
+    object.x, object.y = position.x, position.y
     self.objects[index] = { 
                             position = position, 
                             parameters = nil,
@@ -126,7 +129,7 @@ end
 function UIobject:calculateFixedPosition(position, x, y)
     x = nvl(position.fixedX, x)
     y = nvl(position.fixedY, y)
-    print('calculateFixedPosition', x, y)
+    print(self.tag, 'calculateFixedPosition', x, y)
     return x, y
 end
 
@@ -135,7 +138,7 @@ function UIobject:calculateRelationalPosition(position, x, y)
         x = x + nvl(position.left,0) + (self.width - nvl(position.right, self.width))
         y = y + nvl(position.up,0) + (self.height - nvl(position.down, self.height))
     end
-    print('calculateRelationalPosition', x, y)
+    print(self.tag,'calculateRelationalPosition', x, y)
     return x, y
 end
 
@@ -146,8 +149,8 @@ function UIobject:calculatePositionInTable(position, x, y)
         local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
         x = (cell_width + self.margin) * (ind % self.columns)
         y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1)
+        print(self.tag,'calculatePositionInTable', x, y, ind)
     end
-    print('calculatePositionInTable', x, y)
     return x, y
 end
 
@@ -168,7 +171,7 @@ function UIobject:calculatePositionWithAlign(position, x, y)
         x = self.width/2
         y = self.height
     end
-    print('calculatePositionWithAlign', x, y)
+    print(self.tag,'calculatePositionWithAlign', x, y)
     return x, y
 end
 
@@ -177,14 +180,11 @@ function UIobject:calculateCoordinatesAndWriteToObject(position)
     for ind, func in pairs(self.calculatePositionMethods) do
         position.x, position.y = func(self, position, position.x, position.y)
     end
-    print('Calculated', position.x, position.y)
+    print(self.tag,'Calculated', position.x, position.y)
 end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
 function UIobject:render()
-    if Debug.drawUiDebug then
-        self:debugDraw()
-    end
 end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
@@ -201,7 +201,7 @@ function UIobject:drawCells(color)
 end
 
 function UIobject:drawBoxAroundObject(color, lineWidth, x, y)
-    local x, y = x and x or self.x, y and y or self.y
+    local x, y = x and x or 0, y and y or 0
     love.graphics.setColor( color.r, color.g, color.b, 1 )
     love.graphics.setLineWidth( lineWidth )
     love.graphics.rectangle( 'line', x, y, self.width, self.height )
@@ -211,7 +211,7 @@ end
 
 function UIobject:showOriginalPoint(color)
     love.graphics.setColor( color.r, color.g, color.b, 1 )
-    love.graphics.circle( 'fill', self.x, self.y, 4, 4 )
+    love.graphics.circle( 'fill', 0, 0, 4, 4 )
     love.graphics.setColor( 1, 1, 1, 1 )
 end
 
@@ -235,7 +235,7 @@ end
 function UIobject:drawBackground()
     if self.background then
         local width, height = self.background:getDimensions()
-        love.graphics.draw(self.background, self.x, self.y, 0, self.width/width, self.height/height )
+        love.graphics.draw(self.background, 0, 0, 0, self.width/width, self.height/height )
     end
 end
 
@@ -243,13 +243,16 @@ end
 function UIobject:draw()
     self:drawBackground()
     self:render()
-    local transform = love.math.newTransform()
     for _, object in pairs(self.objects) do
+        local transform = love.math.newTransform()
         transform = transform:translate(object.position.x, object.position.y)
         love.graphics.applyTransform( transform )
         object.object:draw()
-        transform = transform:reset()
-        love.graphics.applyTransform( transform )
+        inverse = transform:inverse()
+        love.graphics.applyTransform( inverse )
+    end
+    if Debug.drawUiDebug then
+        self:debugDraw()
     end
 
 end

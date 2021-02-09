@@ -5,93 +5,78 @@ local utf8 = require("utf8")
 -- Кнопка, умеет нажиматься и писать при этом в лог, все кнопки по хорошему должны наследоваться от этого класса и накидывать кастомные действия и картинки
 InputBox = Class {
 	__includes = UIobject,
-	init = function(self, x, y, width, height, parameters)
-		UIobject.init(self, x, y, width and width or 100, height and height or 50, parameters.tag, parameters.position)
-		self.startClickInteraction = parameters.click and parameters.click or self.defaultClick
-		self.misClickInteraction = parameters.unclick and parameters.unclick or self.defaultUnclick
-		self.text = parameters.defaultText or ''
+	init = function(self, parent, parameters)
+		UIobject.init(self, parent, parameters)
+
+
+        self.clickInteraction['startClickInteraction'] =
+        {
+            condition = function (object, x, y) return object:getCollision(x, y)  end,
+            func =  function (obj, x, y)
+            			obj.focused = true
+                    end
+        }
+
+        self.clickInteraction['mousprmisClickInteractionessed'] =
+        {
+            condition = function (object, x, y) return not object:getCollision(x, y)  end,
+            func =  function (obj, x, y)
+            			obj.focused = false
+                    end
+        }
+
+        self:registerObject('Field_Name', 
+                               { left = -self.width*0.55, up = self.height*0.1}, 
+                               Label(self, {tag = 'test_label1', text = self.tag, width = self.width*0.5, height = self.height*0.8 }))
+        self:registerObject('Entered_text', 
+                               { left = self.width*0.1, up = self.height*0.1}, 
+                               Label(self, {tag = 'test_label2', text = nvl(parameters.defaultText, ''), width = self.width*0.8, height = self.height*0.8 }))
+
+        self.keyInteraction['keyInput'] = 
+        {
+            condition = function (object, x, y) 
+                            return self.focused
+                        end,
+            func =  function (obj, key)
+            			local text = obj:getText()
+                        if obj.serviceButtonPressed and (obj.serviceButton == 'lctrl' or obj.serviceButton == 'rctrl') and key == 'backspace' then
+							obj:setText('')
+						elseif key == "backspace" then
+							local byteoffset = utf8.offset(text, -1)
+					 
+							if byteoffset then
+								obj:setText(string.sub(text, 1, byteoffset - 1))
+							end
+						elseif obj.serviceButtonPressed and (obj.serviceButton == 'lctrl' or obj.serviceButton == 'rctrl') and key == 'v' then
+							obj:setText(love.system.getClipboardText())
+						elseif obj.serviceButtonPressed and (obj.serviceButton == 'lctrl' or obj.serviceButton == 'rctrl') and key == 'c' then
+							love.system.setClipboardText(text)
+						elseif string.len(key) == 1 then
+							if obj.serviceButtonPressed then
+								obj.serviceButtonPressed = false
+								obj.serviceButton = ''
+							else
+								obj:setText(text .. key)
+							end
+						else 
+							obj.serviceButtonPressed = true
+							obj.serviceButton = key
+						end
+                    end
+        }
+		
 	end
 }
 
 function InputBox:render()
-	local img = AssetManager:getImage('field')
-	local width, height = img:getDimensions()
-	love.graphics.draw(img, self.x, self.y, 0, self.width/width, self.height/height )
-    love.graphics.setColor( 0, 0, 0, 1 )
-	love.graphics.print(self.tag, self.x - self.width/3, self.y + self.height/5)
-	love.graphics.print(self.text,self.x + self.width/5, self.y + self.height/5)
-    love.graphics.setColor( 1, 1, 1, 1 )
-end
-
-function InputBox:drawObject(x, y, angle, width, height, simbolsInLine)
-	local simbolsInLine = simbolsInLine and simbolsInLine or 16
-	local img = AssetManager:getImage('field')
-	local widthLoc, heightLoc = img:getDimensions()
-	love.graphics.draw(img, x, y, 0, width/widthLoc, height/heightLoc )
-    love.graphics.setColor( 0, 0, 0, 1 )
-
-    local currentFont = love.graphics.getFont( )
-
-    local outsideFontSize = height*0.8
-    local outsideFont = love.graphics.newFont("resource/fonts/m3x6.ttf", outsideFontSize)
-    local insideTextWidth, outsideTextWidth = width*0.8, outsideFont:getWidth(self.tag)
-    
-    local insideFontSize = 4*insideTextWidth/simbolsInLine
-    local insideFont  = love.graphics.newFont("resource/fonts/m3x6.ttf", insideFontSize )
-
-    love.graphics.setFont(outsideFont)
-    love.graphics.print(self.tag,  x - outsideTextWidth, y + height/2 - outsideFont:getHeight()/2)
-
-    love.graphics.setFont(insideFont)
-	love.graphics.print(self.text, x + (width - insideTextWidth)/2, y + height/2 - insideFont:getHeight()/2)
-
-    love.graphics.setFont(currentFont)
-    love.graphics.setColor( 1, 1, 1, 1 )
-end
-
-function InputBox.defaultClick(self)
-	if not self.focused then
-		self.focused = true
-		print('Focused')
-	end
-end
-
-function InputBox.defaultUnclick(self)
-	if self.focused then
-		self.focused = false
-	end
 end
 
 function InputBox:getText()
-	return self.text
+	return self.objects['Entered_text'].object.text
 end
 
-function InputBox:keypressed( key)
-	if self.focused then
-		if self.serviceButtonPressed and (self.serviceButton == 'lctrl' or self.serviceButton == 'rctrl') and key == 'backspace' then
-			self.text = ''
-		elseif key == "backspace" then
-			local byteoffset = utf8.offset(self.text, -1)
-	 
-			if byteoffset then
-				self.text = string.sub(self.text, 1, byteoffset - 1)
-			end
-		elseif self.serviceButtonPressed and (self.serviceButton == 'lctrl' or self.serviceButton == 'rctrl') and key == 'v' then
-			self.text = love.system.getClipboardText()
-		elseif self.serviceButtonPressed and (self.serviceButton == 'lctrl' or self.serviceButton == 'rctrl') and key == 'c' then
-			love.system.setClipboardText(self.text)
-		elseif string.len(key) == 1 then
-			if self.serviceButtonPressed then
-				self.serviceButtonPressed = false
-				self.serviceButton = ''
-			else
-				self.text = self.text .. key
-			end
-		else 
-			self.serviceButtonPressed = true
-			self.serviceButton = key
-		end
-	end
+function InputBox:setText(text)
+	self.objects['Entered_text'].object.text = text
 end
 
 return InputBox
