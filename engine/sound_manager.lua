@@ -97,12 +97,13 @@ function SoundEmitter:play(options)
             sourceSet[soundFileName]:setVolume(self:getVolume(soundFile, options.volume))
             sourceSet[soundFileName]:setPitch(1 + self.options.pitchVariation * (love.math.random() * 2 - 1))
             sourceSet[soundFileName]:play()
+            return
         end
     end
 end
 
 function SoundEmitter:getVolume(soundFile, customVolume)
-    return math.min(1, SoundManager.globalVolume * (self.options.volume * soundFile.volume * customVolume + self.options.volumeVariation * (love.math.random() * 2 - 1)) )
+    return math.max(0, math.min(1, SoundManager.globalVolume * (self.options.volume * soundFile.volume * customVolume + self.options.volumeVariation * (love.math.random() * 2 - 1)) ))
 end
 
 function SoundEmitter:getPlaying(sourceSet)

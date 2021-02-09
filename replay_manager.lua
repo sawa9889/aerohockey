@@ -48,7 +48,7 @@ function ReplayManager:unpackReplay(data)
     end
     local okDeserialize, replay = serpent.load(data)
     if not data or not okDeserialize or not replay or not self:isValidReplay(replay) then
-        vardump(data)
+        print(replay)
         print("Error decoding replay")
         return
     end

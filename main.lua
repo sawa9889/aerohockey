@@ -4,6 +4,9 @@ require "engine.debug"
 StateManager = require "lib.hump.gamestate"
 AssetManager = require "engine.asset_manager"
 
+SoundData = require "game.sound_data"
+SoundManager = require "engine.sound_manager" (SoundData)
+
 NetworkManager = require "netcode.network_manager" -- yeah, global
 
 states = {

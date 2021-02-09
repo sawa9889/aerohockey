@@ -27,7 +27,9 @@ function Game:init(inputSource)
     self.player1_start = {x = self.arena_start.x + self.arena_width/4   , y = self.arena_start.y + self.arena_height/2 }
     self.player2_start = {x = self.arena_start.x + self.arena_width*3/4 , y = self.arena_start.y + self.arena_height/2 }
     self.players[1] = self.hc:circle(self.player1_start.x, self.player1_start.y, self.circle_range)
+    self.players[1].type = "paddle"
     self.players[2] = self.hc:circle(self.player2_start.x, self.player2_start.y, self.circle_range)
+    self.players[2].type = "paddle"
 
     self.ball_start = {x = self.arena_start.x + self.arena_width/2 , y = self.arena_start.y + self.arena_height/2}
     self.ball = {shape = self.hc:circle(self.ball_start.x, self.ball_start.y, self.ball_range), velocity = Vector(0, 0) }
@@ -217,6 +219,8 @@ function Game:advanceFrame()
     player_dPos[1] = self:getPlayerdx(Vector(inputs[1].x, inputs[1].y), 1) / iterations
     player_dPos[2] = self:getPlayerdx(Vector(inputs[2].x, inputs[2].y), 2) / iterations
 
+    local sound = false
+
     local i = 1
     while i <= iterations do
         self.players[1]:move(player_dPos[1].x, player_dPos[1].y)
@@ -224,6 +228,11 @@ function Game:advanceFrame()
         if self.game_start_timer >= self.game_start_time then
             for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
                 self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
+                if shape and shape.type == 'paddle' then
+                    sound = 'paddle'
+                else
+                    sound = 'table'
+                end
             end
             if self.ball.velocity:len() > self.ball_max_speed then
                 self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
@@ -236,6 +245,10 @@ function Game:advanceFrame()
         i = i + 1
     end
 
+    local volumeBySpeed = (self.ball.velocity:len() / self.ball_max_speed)
+    if sound then 
+        SoundManager:play(sound .. "Hit", {volume = volumeBySpeed})
+    end 
     self.game_start_timer = self.game_start_timer + 1
 
     self.ball.velocity = self.ball.velocity * self.ball_friction
