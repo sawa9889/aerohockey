@@ -23,6 +23,8 @@ function Game:init(inputSource)
     self.arena_width = self.width*self.scaleX
     self.arena_height = (self.height-scoreBoardHeight)*self.scaleY
 
+    self.soundPosRatio = 0.25
+
     self.players = {}
     self.player1_start = {x = self.arena_start.x + self.arena_width/4   , y = self.arena_start.y + self.arena_height/2 }
     self.player2_start = {x = self.arena_start.x + self.arena_width*3/4 , y = self.arena_start.y + self.arena_height/2 }
@@ -228,11 +230,7 @@ function Game:advanceFrame()
         if self.game_start_timer >= self.game_start_time then
             for shape, delta in pairs(self.hc:collisions(self.ball.shape)) do
                 self.ball.velocity = self.ball.velocity + Vector(unpack(delta))/iterations
-                if shape and shape.type == 'paddle' then
-                    sound = 'paddle'
-                else
-                    sound = 'table'
-                end
+                sound = true
             end
             if self.ball.velocity:len() > self.ball_max_speed then
                 self.ball.velocity = self.ball.velocity:normalized() * self.ball_max_speed
@@ -246,8 +244,9 @@ function Game:advanceFrame()
     end
 
     local volumeBySpeed = (self.ball.velocity:len() / self.ball_max_speed)
+    local soundPosition = ( 2 * (self.ball.shape:center() - self.arena_width/2) / self.arena_width ) * self.soundPosRatio
     if sound then 
-        SoundManager:play(sound .. "Hit", {volume = volumeBySpeed})
+        SoundManager:play("paddleHit", {volume = volumeBySpeed, position = {soundPosition, 1, 0}})
     end 
     self.game_start_timer = self.game_start_timer + 1
 
@@ -261,12 +260,14 @@ function Game:advanceFrame()
         if shape.type == 'ball' then
             self.rightPlayerPoints = self.rightPlayerPoints + 1
             self:resetGameState()
+            SoundManager:play("goal", {position = {-0.2, 1, 0}})
         end
     end
     for shape, delta in pairs(self.hc:collisions(self.arena.right_gate)) do
         if shape.type == 'ball' then
             self.leftPlayerPoints = self.leftPlayerPoints + 1
             self:resetGameState()
+            SoundManager:play("goal", {position = {0.2, 1, 0}})
         end
     end
 end

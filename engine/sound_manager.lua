@@ -77,14 +77,16 @@ function SoundEmitter:setOptions(options)
     end
 end
 
+--options = {
+--    volume = 1,
+--    position = {0, 0, 0}
+--}
 function SoundEmitter:play(options)
     if #self.sources < self.options.maxSources then
         self.sources[#self.sources + 1] = {}
     end
     if not options then
-        options = {
-            volume = 1,
-        }
+        options = {}
     end
     for id, sourceSet in ipairs(self.sources) do
         local source = self:getPlaying(sourceSet)
@@ -95,6 +97,10 @@ function SoundEmitter:play(options)
                 sourceSet[soundFileName] = AssetManager:getSound(soundFileName)
             end
             sourceSet[soundFileName]:setVolume(self:getVolume(soundFile, options.volume))
+            if options.position then
+                sourceSet[soundFileName]:setPosition(unpack(options.position))
+            end
+            -- TODO set effects
             sourceSet[soundFileName]:setPitch(1 + self.options.pitchVariation * (love.math.random() * 2 - 1))
             sourceSet[soundFileName]:play()
             return
@@ -103,6 +109,7 @@ function SoundEmitter:play(options)
 end
 
 function SoundEmitter:getVolume(soundFile, customVolume)
+    if not customVolume then customVolume = 1 end
     return math.max(0, math.min(1, SoundManager.globalVolume * (self.options.volume * soundFile.volume * customVolume + self.options.volumeVariation * (love.math.random() * 2 - 1)) ))
 end
 
