@@ -43,7 +43,6 @@ InputBox = Class {
 							obj:setText('')
 						elseif key == "backspace" then
 							local byteoffset = utf8.offset(text, -1)
-					 
 							if byteoffset then
 								obj:setText(string.sub(text, 1, byteoffset - 1))
 							end

@@ -129,7 +129,7 @@ end
 function UIobject:calculateFixedPosition(position, x, y)
     x = nvl(position.fixedX, x)
     y = nvl(position.fixedY, y)
-    print(self.tag, 'calculateFixedPosition', x, y)
+    -- print(self.tag, 'calculateFixedPosition', x, y)
     return x, y
 end
 
@@ -138,7 +138,7 @@ function UIobject:calculateRelationalPosition(position, x, y)
         x = x + nvl(position.left,0) + (self.width - nvl(position.right, self.width))
         y = y + nvl(position.up,0) + (self.height - nvl(position.down, self.height))
     end
-    print(self.tag,'calculateRelationalPosition', x, y)
+    -- print(self.tag,'calculateRelationalPosition', x, y)
     return x, y
 end
 
@@ -149,7 +149,7 @@ function UIobject:calculatePositionInTable(position, x, y)
         local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
         x = (cell_width + self.margin) * (ind % self.columns)
         y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1)
-        print(self.tag,'calculatePositionInTable', x, y, ind)
+        -- print(self.tag,'calculatePositionInTable', x, y, ind)
     end
     return x, y
 end
@@ -171,7 +171,7 @@ function UIobject:calculatePositionWithAlign(position, x, y)
         x = self.width/2
         y = self.height
     end
-    print(self.tag,'calculatePositionWithAlign', x, y)
+    -- print(self.tag,'calculatePositionWithAlign', x, y)
     return x, y
 end
 
@@ -180,7 +180,7 @@ function UIobject:calculateCoordinatesAndWriteToObject(position)
     for ind, func in pairs(self.calculatePositionMethods) do
         position.x, position.y = func(self, position, position.x, position.y)
     end
-    print(self.tag,'Calculated', position.x, position.y)
+    -- print(self.tag,'Calculated', position.x, position.y)
 end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render

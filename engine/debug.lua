@@ -9,7 +9,7 @@ Debug = {
     replayDebug = 0,
     visualDesyncDebug = 0,
     networkSocket = 0,
-    drawUiDebug = 1
+    drawUiDebug = false
 }
 
 -- usage: vardump(x1, test, myVar) or vardump({ship = self, dt = dt})

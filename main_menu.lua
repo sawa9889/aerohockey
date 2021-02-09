@@ -12,7 +12,7 @@ MainMenuContainer = Class {
                                         width = 200, 
                                         height = 50, 
                                         background = AssetManager:getImage('experimental_button'),
-                                        callback = function() self:startServer() end
+                                        callback = function(obj, x, y) self:startServer() end
                                     }))
         self:registerObject("start_connection_button", 
                                          {row = 3, column = 3}, 
@@ -21,7 +21,7 @@ MainMenuContainer = Class {
                                             width = 200, 
                                             height = 50, 
                                             background = AssetManager:getImage('experimental_button'),
-                                            callback = function() self:connectToGame() end
+                                            callback = function(obj, x, y) self:connectToGame() end
                                         }))
         self:registerObject("show_last_replay_button", 
                                          {row = 4, column = 2}, 
@@ -30,7 +30,11 @@ MainMenuContainer = Class {
                                             width = 200, 
                                             height = 50, 
                                             background = AssetManager:getImage('experimental_button'),
-                                            callback = function () self.parent.activePage = "Load_Menu" end
+                                            callback = function(obj, x, y) 
+                                                            if replay.inputs then                    
+                                                                StateManager.switch(states.replay, require "game", replay, replay.states)
+                                                            end 
+                                                        end
                                         }))
         self:registerObject("show_saved_replays_button", 
                                          {row = 4, column = 3}, 
@@ -39,10 +43,8 @@ MainMenuContainer = Class {
                                             width = 200, 
                                             height = 50, 
                                             background = AssetManager:getImage('experimental_button'),
-                                            callback = function () 
-                                                            if replay.inputs then                    
-                                                                StateManager.switch(states.replay, require "game", replay, replay.states)
-                                                            end 
+                                            callback = function(obj, x, y) 
+                                                            self.parent.activePage = "Load_Menu"
                                                         end
                                         }))
         self:registerObject("ip_adress_input", 
@@ -88,11 +90,6 @@ end
 
 function MainMenuContainer:getPortInput()
     return self.objects["port_input"].object:getText()
-end
-
--- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
-function MainMenuContainer:render()
-    self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150)
 end
 
 return MainMenuContainer

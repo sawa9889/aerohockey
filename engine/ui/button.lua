@@ -11,9 +11,7 @@ Button = Class {
             condition = function (object, x, y) 
                             return object:getCollision(x, y) 
                         end,
-            func =  function (obj, x, y)
-                        print(self.tag, 'Clicked')
-                    end
+            func =  parameters.callback
         }
         self:registerObject('Label', 
                                { left = self.width*0.1, up = self.height*0.1}, 
