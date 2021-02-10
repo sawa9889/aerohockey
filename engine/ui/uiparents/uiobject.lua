@@ -254,7 +254,6 @@ function UIobject:draw()
     if Debug.drawUiDebug then
         self:debugDraw()
     end
-
 end
 
 function UIobject:mousepressed(x, y)

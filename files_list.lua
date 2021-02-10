@@ -50,28 +50,9 @@ FilesList = Class {
         }
     end
 }
+
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render
 function FilesList:render()
-
-    -- local canvas = love.graphics.newCanvas(self.width, self.height)
-
-    -- love.graphics.setCanvas(canvas)
-    -- for _, node in pairs(self.objects) do
-    --     node:draw()
-    -- end
-    -- love.graphics.setCanvas()
-
-    -- -- To Do Scroll bar 
-    -- local koef, koef2 = #self.objects / self.rows, self.rows / #self.objects > 1 and 1 or self.rows / #self.objects
-    -- love.graphics.setColor( 0, 0, 0, 1 )
-    -- love.graphics.rectangle( 'line', self.canvasX - love.graphics.getWidth()*0.05, self.canvasY , love.graphics.getWidth()*0.04, self.height )
-    -- love.graphics.setColor( 1, 1, 1, 1 )
-    -- love.graphics.rectangle( 'fill', self.canvasX - love.graphics.getWidth()*0.045
-    --     , self.canvasY + self.height * (1 - koef2) * - ((self.y - self.canvasY)/(self.canvasY + #self.objects * self.node_height)) 
-    --     , love.graphics.getWidth()*0.03, koef2 * self.height )
-    -- self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150, self.canvasX, self.canvasY)
-    
-    -- love.graphics.draw(canvas, self.canvasX, self.canvasY)
 end
 
 return FilesList
