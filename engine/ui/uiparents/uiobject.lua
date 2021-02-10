@@ -239,7 +239,6 @@ function UIobject:drawBackground()
     end
 end
 
--- Отображение объектов, с учётом релативной и фиксированной расположенности
 function UIobject:draw()
     self:drawBackground()
     self:render()

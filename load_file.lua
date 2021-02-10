@@ -13,7 +13,7 @@ LoadFileContainer = Class {
                                 width = 200, 
                                 height = 50, 
                                 background = AssetManager:getImage('experimental_button'),
-                                callback = function(obj, x, y) self.parent.activePage = "Main_menu" end
+                                callback = function(obj, x, y) self.parent.activePage = "Main_Menu" end
                             }))
 
         self:registerObject("files_list", 
