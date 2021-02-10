@@ -1,5 +1,7 @@
 # Aerohockey
 
+Play it here: https://saviorium.itch.io/aerohockey
+
 Multiplayer aerohockey game for 2 players on LOVE2D. Made mainly to test networking.
 
 ### Features:
