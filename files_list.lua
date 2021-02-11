@@ -11,9 +11,13 @@ FilesList = Class {
         self.cellWidth = (self.width - self.margin*(self.columns-1))/self.columns
         self.cellHeight = (self.height - self.margin*(self.rows-1))/self.rows
         self.firctCellY = 0
+        print('Start counting ')
+        for ind, obj in pairs(self.objects) do
+            print(ind, obj)
+        end
         local lfs = love.filesystem
         local files = lfs.getDirectoryItems(directory)
-        local iter = -1
+        local iter = 1
         for name, file in ipairs(files) do
             if file and file ~= ''  then
                 local pathToFile = directory..'/'..file
@@ -42,26 +46,19 @@ FilesList = Class {
         {
             condition = function (object, x, y) return true end,
             func =  function (obj, x, y)
-            			local cnt = count(obj.objects, function() return true end)
-            			local changeY = (obj.firctCellY + y*5 <= 0 and (obj.firctCellY + y*5 >= - (cnt-1) * (obj.cellHeight+obj.margin) and y*5 or 0) or 0 )
-            			obj.firctCellY = obj.firctCellY + changeY
-            			for _, object in pairs(obj.objects) do
-            				object.position.y = object.position.y + changeY
-            			end
+            			obj:moveObjects(y)
                     end
         }
     end
 }
 
-function FilesList:render()
-	local koef, koef2 = #self.objects / self.rows, self.rows / #self.objects > 1 and 1 or self.rows / #self.objects
-    love.graphics.setColor( 0, 0, 0, 1 )
-    love.graphics.rectangle( 'line', self.canvasX - love.graphics.getWidth()*0.05, self.canvasY , love.graphics.getWidth()*0.04, self.height )
-    love.graphics.setColor( 1, 1, 1, 1 )
-    love.graphics.rectangle( 'fill', self.canvasX - love.graphics.getWidth()*0.045
-        , self.canvasY + self.height * (1 - koef2) * - ((self.y - self.canvasY)/(self.canvasY + #self.objects * self.node_height)) 
-        , love.graphics.getWidth()*0.03, koef2 * self.height )
-    self:drawBoxAroundObject({r = 0, g = 0, b = 0}, love.graphics.getWidth()/150, self.canvasX, self.canvasY)
+function FilesList:moveObjects(y)
+    local cnt = count(self.objects, function() return true end)
+    local changeY = (self.firctCellY + y*5 <= 0 and (self.firctCellY + y*5 >= - (cnt-1) * (self.cellHeight+self.margin) and y*5 or 0) or 0 )
+    self.firctCellY = self.firctCellY + changeY
+    for _, object in pairs(self.objects) do
+        object.position.y = object.position.y + changeY
+    end
 end
 
 -- Указан отдельный объект чтобы логика указанная в Draw была сквозной, а опциональная была в render

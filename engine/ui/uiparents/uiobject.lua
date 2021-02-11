@@ -71,8 +71,8 @@ UIobject = Class {
         }
 
         self.x, self.y = 0, 0
-        self.width = nvl(parameters.width, love.graphics.getWidth())
-        self.height = nvl(parameters.height, love.graphics.getHeight())
+        self.width = nvl(parameters.width, self.parent and self.parent.width or love.graphics.getWidth())
+        self.height = nvl(parameters.height, self.parent and self.parent.height or love.graphics.getHeight())
 
         self.objects = nvl(parameters.objects, {})
         self.background = parameters.background
@@ -80,37 +80,61 @@ UIobject = Class {
         self.columns = nvl(parameters.columns, 1)
         self.rows = nvl(parameters.rows, 1)
         self.margin = nvl(parameters.margin, 10)
-
         self.calculatePositionMethods = {
                                             one = self.calculateRelationalPosition,
                                             two = self.calculatePositionWithAlign,
-                                            three = self.calculatePositionInTable,
+                                            -- three = self.calculatePositionInTable,
                                             four = self.calculateFixedPosition,
                                         }
                                         print(self.tag, 'Created')
+
+        if self.columns > 1 or self.rows > 1 then
+            local cell_width = (self.width - self.margin*(self.columns-1))/self.columns
+            local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
+            for ind = 0, self.columns * self.rows - 1, 1 do
+                local x = (cell_width + self.margin) * (ind % self.columns)
+                local y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) 
+                self:registerNewObject(ind, {fixedX = x, fixedY = y}, {width = cell_width, height = cell_height}, self)
+            end 
+        end
+
     end
 }
 
 -- Регистрация объекта в окошке, для его отображения и считывания действий
 function UIobject:registerNewObject(index, position, parameters, parent)
     local object = UIobject(parent, parameters)
-    self:calculateCoordinatesAndWriteToObject(position)
-    object.x, object.y = position.x, position.y
-    self.objects[index] = { 
-                            position = position, 
-                            parameters = parameters,
-                            object = object,
-                          }
+    if (self.rows == 1 and self.columns == 1) or not(position.row and position.column) then
+        self:calculateCoordinatesAndWriteToObject(position)
+        object.x, object.y = position.x, position.y
+        self.objects[index] = { 
+                                position = position, 
+                                parameters = parameters,
+                                object = object,
+                              }
+    else
+        local row, column = position.row, position.column
+        position.row, position.column = nil, nil
+        print( (row-1) * self.columns + (column - 1) )
+        self.objects[ (row - 1) * self.columns + (column - 1) ].object:registerObject(index, position, object)
+    end
 end
 
 function UIobject:registerObject(index, position, object)
-    self:calculateCoordinatesAndWriteToObject(position)
-    object.x, object.y = position.x, position.y
-    self.objects[index] = { 
-                            position = position, 
-                            parameters = nil,
-                            object = object,
-                          }
+    if (self.rows == 1 and self.columns == 1) or not(position.row and position.column) then
+        self:calculateCoordinatesAndWriteToObject(position)
+        object.x, object.y = position.x, position.y
+        self.objects[index] = { 
+                                position = position, 
+                                parameters = nil,
+                                object = object,
+                              }
+    else
+        local row, column = position.row, position.column
+        position.row, position.column = nil, nil
+        print( (row-1) * self.columns + (column - 1) )
+        self.objects[ (row - 1) * self.columns + (column - 1)].object:registerObject(index, position, object)
+    end
 end
 
 -- Всем объектам надо уметь понимать случилась ли коллизия, причем не важно с мышкой или чем-то ещё
@@ -193,9 +217,9 @@ function UIobject:drawCells(color)
     local cell_height = (self.height - self.margin*(self.rows-1))/self.rows
     love.graphics.setColor( color.r, color.g, color.b, 1 )
     for ind = 0, self.columns * self.rows - 1, 1 do
-        x = (cell_width + self.margin) * (ind % self.columns) + cell_width/2
-        y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) + cell_height/2
-        love.graphics.rectangle( 'line', x-cell_width/2, y-cell_height/2, cell_width, cell_height )
+        x = (cell_width + self.margin) * (ind % self.columns)
+        y = (cell_height + self.margin) * (ind/self.columns - (ind / self.columns)%1) 
+        love.graphics.rectangle( 'line', x, y, cell_width, cell_height )
     end
     love.graphics.setColor( 1, 1, 1, 1 )
 end

@@ -27,6 +27,15 @@ LoadFileContainer = Class {
                                 callback = function(obj, x, y) self.parent.activePage = "Main_Menu" end,
                                 directory = 'replays'--'%appdata%/LOVE/'
                             }))
+
+        self:registerObject("scroll_bar", 
+                             {left = self.width * 0.05, up = self.height * 0.1}, 
+                             ScrollBar(self, {  
+                                tag = 'Files scroll bar', 
+                                width = self.width*0.05, 
+                                height = self.height*0.7,
+                                targetObject = self.objects["files_list"].object
+                            }))
     end
 }
 

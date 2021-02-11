@@ -4,8 +4,9 @@ UIobject  = require "engine.ui.uiparents.uiobject"
 MainMenuContainer = require "main_menu"
 LoadFileContainer = require "load_file"
 Button         = require "engine.ui.button"
-Label         = require "engine.ui.label"
+Label          = require "engine.ui.label"
 InputBox       = require "engine.ui.input_box"
+ScrollBar      = require "engine.ui.scroll_bar"
 
 local Menu = {
     localPlayer = 1,
