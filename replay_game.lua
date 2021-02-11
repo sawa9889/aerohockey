@@ -82,7 +82,14 @@ function ReplayGame:draw()
     if Debug and Debug.showFps == 1 then
         love.graphics.print(""..tostring(love.timer.getFPS( )), 2, 2)
     end
-    love.graphics.print(self.frame, 2, 16)
+    love.graphics.print("Frame: "..self.frame, 2, 16)
+    love.graphics.print(string.format(
+        "Controls:\n%s - save replay to file\n%s - to fast forward\n%s - to pause\n%s - advance frame on pause",
+        config.controls.replaySave,
+        config.controls.replayFF,
+        config.controls.replayPause,
+        config.controls.replayAdvanceFrame
+    ), 2, 30)
     if Debug and Debug.visualDesyncDebug == 1 then
         self.desyncDebugGame:draw()
     end
