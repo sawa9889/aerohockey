@@ -22,6 +22,10 @@ When player receives inputs from another player, they are put in the table and t
 
 There is a system to synchronize the frame on each player's game. It works a bit different from GGPO. On every input packet, the game sends the last confirmed local frame (frame that the opponent got from you), and currently shown frame (frame that was on opponent's screen on that moment). You can use that information to calculate time of round trip between players and how much you are ahead of your opponent.
 
+![Playing with bad network via clumsy](network-clumsy-demo.gif)
+
+On the picture: using [clumsy](https://github.com/jagt/clumsy) to simulate bad network 
+
 ### Libraries and assets
 
 - [LÖVE 11.3](https://love2d.org/)
